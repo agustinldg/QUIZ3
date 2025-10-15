@@ -1,0 +1,4617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUIZ3 - Interactive Quiz Application</title>
+    
+    <!-- jsPDF CDN with local fallback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" 
+            onerror="this.onerror=null; this.src='./lib/jspdf.umd.min.js'"></script>
+    
+    <style>
+        /* CSS Custom Properties (Variables) */
+        :root {
+            /* Color Palette */
+            --color-primary: #2563eb;
+            --color-primary-hover: #1d4ed8;
+            --color-primary-light: #dbeafe;
+            --color-secondary: #64748b;
+            --color-secondary-hover: #475569;
+            --color-success: #16a34a;
+            --color-success-light: #dcfce7;
+            --color-error: #dc2626;
+            --color-error-light: #fef2f2;
+            --color-warning: #d97706;
+            --color-warning-light: #fef3c7;
+            
+            /* Neutral Colors */
+            --color-white: #ffffff;
+            --color-gray-50: #f8fafc;
+            --color-gray-100: #f1f5f9;
+            --color-gray-200: #e2e8f0;
+            --color-gray-300: #cbd5e1;
+            --color-gray-400: #94a3b8;
+            --color-gray-500: #64748b;
+            --color-gray-600: #475569;
+            --color-gray-700: #334155;
+            --color-gray-800: #1e293b;
+            --color-gray-900: #0f172a;
+            
+            /* Typography */
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            
+            /* Responsive Font Sizes using clamp() */
+            --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+            --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+            --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+            --font-size-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+            --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+            --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);
+            --font-size-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.25rem);
+            --font-size-4xl: clamp(2.25rem, 1.9rem + 1.75vw, 3rem);
+            
+            /* Font Weights */
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            
+            /* Line Heights */
+            --line-height-tight: 1.25;
+            --line-height-normal: 1.5;
+            --line-height-relaxed: 1.625;
+            --line-height-loose: 2;
+            
+            /* Spacing Scale */
+            --space-1: clamp(0.25rem, 0.2rem + 0.25vw, 0.375rem);
+            --space-2: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+            --space-3: clamp(0.75rem, 0.6rem + 0.75vw, 1.125rem);
+            --space-4: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+            --space-5: clamp(1.25rem, 1rem + 1.25vw, 1.875rem);
+            --space-6: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+            --space-8: clamp(2rem, 1.6rem + 2vw, 3rem);
+            --space-10: clamp(2.5rem, 2rem + 2.5vw, 3.75rem);
+            --space-12: clamp(3rem, 2.4rem + 3vw, 4.5rem);
+            --space-16: clamp(4rem, 3.2rem + 4vw, 6rem);
+            --space-20: clamp(5rem, 4rem + 5vw, 7.5rem);
+            
+            /* Border Radius */
+            --radius-sm: 0.25rem;
+            --radius-base: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-full: 9999px;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+            --transition-base: 250ms ease-in-out;
+            --transition-slow: 350ms ease-in-out;
+            
+            /* Z-Index Scale */
+            --z-dropdown: 1000;
+            --z-sticky: 1020;
+            --z-fixed: 1030;
+            --z-modal-backdrop: 1040;
+            --z-modal: 1050;
+            --z-popover: 1060;
+            --z-tooltip: 1070;
+        }
+        
+        /* Basic Reset */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Base Typography */
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: var(--font-family-base);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-normal);
+            line-height: var(--line-height-normal);
+            color: var(--color-gray-800);
+            background-color: var(--color-gray-50);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Headings */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: var(--font-weight-bold);
+            line-height: var(--line-height-tight);
+            color: var(--color-gray-900);
+        }
+        
+        h1 { font-size: var(--font-size-3xl); }
+        h2 { font-size: var(--font-size-2xl); }
+        h3 { font-size: var(--font-size-xl); }
+        h4 { font-size: var(--font-size-lg); }
+        h5 { font-size: var(--font-size-base); }
+        h6 { font-size: var(--font-size-sm); }
+        
+        /* Paragraphs */
+        p {
+            margin-bottom: var(--space-4);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Links */
+        a {
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+        
+        a:hover,
+        a:focus {
+            color: var(--color-primary-hover);
+            text-decoration: underline;
+        }
+        
+        /* Focus Styles */
+        :focus {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        :focus:not(:focus-visible) {
+            outline: none;
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        
+        .font-medium { font-weight: var(--font-weight-medium); }
+        .font-semibold { font-weight: var(--font-weight-semibold); }
+        .font-bold { font-weight: var(--font-weight-bold); }
+        
+        /* ==========================================================================
+           RESPONSIVE LAYOUT SYSTEM
+           ========================================================================== */
+        
+        /* App Container */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-4);
+        }
+        
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-6);
+            padding: var(--space-4) 0;
+        }
+        
+        .header__title {
+            font-size: var(--font-size-3xl);
+            color: var(--color-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .header__subtitle {
+            font-size: var(--font-size-lg);
+            color: var(--color-gray-600);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        /* Progress Section */
+        .progress-section {
+            margin-bottom: var(--space-6);
+        }
+        
+        /* Quiz Container - Main Layout */
+        .quiz-container {
+            flex: 1;
+            display: grid;
+            gap: var(--space-6);
+            grid-template-areas: 
+                "question"
+                "choices"
+                "navigation";
+        }
+        
+        .question-section {
+            grid-area: question;
+        }
+        
+        .choices-section {
+            grid-area: choices;
+        }
+        
+        .navigation-section {
+            grid-area: navigation;
+        }
+        
+        /* Question Section Layout */
+        .question-prompt {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-4);
+        }
+        
+        /* Choices Grid - Mobile Layout (2-column grid) */
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            width: 100%;
+        }
+        
+        /* Third choice spans both columns on mobile */
+        .choices-grid .choice-button:nth-child(3) {
+            grid-column: 1 / -1;
+        }
+        
+        /* Navigation Layout */
+        .navigation-section {
+            margin-top: var(--space-6);
+        }
+        
+        .navigation-controls {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+            align-items: center;
+        }
+        
+        .navigation-info {
+            order: -1;
+            text-align: center;
+        }
+        
+        .keyboard-hint {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-500);
+            font-style: italic;
+        }
+        
+        /* ==========================================================================
+           TABLET PORTRAIT LAYOUT (768px - 1023px)
+           Single column layout with larger elements
+           ========================================================================== */
+        
+        @media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+            .app-container {
+                padding: var(--space-6);
+            }
+            
+            .quiz-container {
+                gap: var(--space-8);
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            /* Single column layout for choices */
+            .choices-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-5);
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            
+            .choices-grid .choice-button:nth-child(3) {
+                grid-column: 1;
+            }
+            
+            .navigation-controls {
+                flex-direction: row;
+                justify-content: space-between;
+                max-width: 500px;
+                width: 100%;
+            }
+            
+            .navigation-info {
+                order: 0;
+                flex: 1;
+                margin: 0 var(--space-4);
+            }
+        }
+        
+        /* ==========================================================================
+           TABLET LANDSCAPE LAYOUT (768px - 1023px)
+           Split layout: prompt left, choices right
+           ========================================================================== */
+        
+        @media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+            .app-container {
+                padding: var(--space-4) var(--space-6);
+            }
+            
+            .quiz-container {
+                grid-template-areas: 
+                    "question choices"
+                    "navigation navigation";
+                grid-template-columns: 1fr 1fr;
+                gap: var(--space-6) var(--space-8);
+                align-items: start;
+            }
+            
+            .question-section {
+                display: flex;
+                align-items: center;
+                min-height: 400px;
+            }
+            
+            .question-prompt {
+                width: 100%;
+            }
+            
+            /* Choices in 2x2 grid for landscape */
+            .choices-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: var(--space-4);
+            }
+            
+            .choices-grid .choice-button:nth-child(3) {
+                grid-column: 1;
+            }
+            
+            .navigation-controls {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .navigation-info {
+                order: 0;
+                flex: 1;
+                margin: 0 var(--space-4);
+            }
+        }
+        
+        /* ==========================================================================
+           DESKTOP LAYOUT (1024px+)
+           Enhanced split layout with more spacing
+           ========================================================================== */
+        
+        @media (min-width: 1024px) {
+            .app-container {
+                padding: var(--space-6) var(--space-8);
+            }
+            
+            .quiz-container {
+                grid-template-areas: 
+                    "question choices"
+                    "navigation navigation";
+                grid-template-columns: 1fr 1fr;
+                gap: var(--space-8) var(--space-12);
+                align-items: start;
+            }
+            
+            .question-section {
+                display: flex;
+                align-items: center;
+                min-height: 500px;
+            }
+            
+            .question-prompt {
+                width: 100%;
+            }
+            
+            /* Choices in single column for desktop */
+            .choices-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-5);
+                max-width: 400px;
+            }
+            
+            .choices-grid .choice-button:nth-child(3) {
+                grid-column: 1;
+            }
+            
+            .navigation-controls {
+                flex-direction: row;
+                justify-content: space-between;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .navigation-info {
+                order: 0;
+                flex: 1;
+                margin: 0 var(--space-6);
+            }
+        }
+        
+        /* ==========================================================================
+           LARGE DESKTOP LAYOUT (1200px+)
+           Optimized for larger screens
+           ========================================================================== */
+        
+        @media (min-width: 1200px) {
+            .quiz-container {
+                gap: var(--space-10) var(--space-16);
+            }
+            
+            .question-section {
+                min-height: 600px;
+            }
+            
+            .choices-grid {
+                max-width: 450px;
+                gap: var(--space-6);
+            }
+        }
+        
+        /* ==========================================================================
+           INTERACTIVE ELEMENTS & VISUAL FEEDBACK
+           ========================================================================== */
+        
+        /* Button Base Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-5);
+            font-family: var(--font-family-base);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            line-height: 1;
+            text-decoration: none;
+            border: 2px solid transparent;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        /* Primary Button */
+        .btn--primary {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            border-color: var(--color-primary);
+        }
+        
+        .btn--primary:hover:not(:disabled) {
+            background-color: var(--color-primary-hover);
+            border-color: var(--color-primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn--primary:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* Secondary Button */
+        .btn--secondary {
+            background-color: var(--color-white);
+            color: var(--color-gray-700);
+            border-color: var(--color-gray-300);
+        }
+        
+        .btn--secondary:hover:not(:disabled) {
+            background-color: var(--color-gray-50);
+            border-color: var(--color-gray-400);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn--secondary:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* Progress Bar Styles */
+        .progress-bar {
+            position: relative;
+            width: 100%;
+            height: 8px;
+            background-color: var(--color-gray-200);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-bottom: var(--space-3);
+        }
+        
+        .progress-bar__fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+            border-radius: var(--radius-full);
+            transition: width var(--transition-slow);
+            width: 0%;
+        }
+        
+        .progress-bar__text {
+            text-align: center;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--color-gray-600);
+            margin-top: var(--space-2);
+        }
+        
+        /* Image Button Styles */
+        .image-button {
+            position: relative;
+            border: 3px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            background: var(--color-white);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            overflow: hidden;
+            max-width: 100%;
+        }
+        
+        .image-button:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .image-button:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .image-button__overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(37, 99, 235, 0.1);
+            opacity: 0;
+            transition: opacity var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-button:hover .image-button__overlay {
+            opacity: 1;
+        }
+        
+        /* Prompt Image Styles */
+        .prompt-image {
+            width: 100%;
+            height: auto;
+            max-width: 400px;
+            max-height: 300px;
+            object-fit: contain;
+            display: block;
+        }
+        
+        /* Choice Button Styles */
+        .choice-button {
+            position: relative;
+            background: var(--color-white);
+            border: 3px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            text-align: center;
+            width: 100%;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .choice-button:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .choice-button:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Selected Choice State */
+        .choice-button.selected {
+            border-color: var(--color-success);
+            background-color: var(--color-success-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .choice-button.selected:hover {
+            border-color: var(--color-success);
+        }
+        
+        /* Choice Content */
+        .choice-content {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .choice-image {
+            width: 100%;
+            height: auto;
+            max-width: 150px;
+            max-height: 100px;
+            object-fit: contain;
+            border-radius: var(--radius-base);
+        }
+        
+        .choice-caption {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-700);
+            font-weight: var(--font-weight-medium);
+            text-align: center;
+            line-height: var(--line-height-tight);
+            margin: 0;
+        }
+        
+        /* Choice Indicator */
+        .choice-indicator {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            background: var(--color-primary);
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            transition: all var(--transition-base);
+        }
+        
+        .choice-checkmark {
+            display: none;
+            font-size: var(--font-size-lg);
+        }
+        
+        .choice-button.selected .choice-number {
+            display: none;
+        }
+        
+        .choice-button.selected .choice-checkmark {
+            display: block;
+        }
+        
+        .choice-button.selected .choice-indicator {
+            background: var(--color-success);
+            animation: checkmark-bounce 0.4s ease-out;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: var(--z-modal);
+        }
+        
+        .loading-content {
+            background: var(--color-white);
+            padding: var(--space-8);
+            border-radius: var(--radius-xl);
+            text-align: center;
+            max-width: 400px;
+            margin: var(--space-4);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--color-gray-200);
+            border-top: 4px solid var(--color-primary);
+            border-radius: var(--radius-full);
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--space-4);
+        }
+        
+        .countdown-timer {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-700);
+            margin: var(--space-4) 0;
+        }
+        
+        /* Results Section */
+        .results-section {
+            text-align: center;
+            padding: var(--space-8);
+            background: var(--color-white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            margin: var(--space-6) 0;
+        }
+        
+        .results-title {
+            color: var(--color-success);
+            margin-bottom: var(--space-6);
+        }
+        
+        .score-display {
+            margin: var(--space-8) 0;
+        }
+        
+        .score-circle {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 150px;
+            height: 150px;
+            border: 6px solid var(--color-success);
+            border-radius: var(--radius-full);
+            background: var(--color-success-light);
+            margin: 0 auto;
+        }
+        
+        .score-number {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-success);
+            line-height: 1;
+        }
+        
+        .score-label {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-600);
+            font-weight: var(--font-weight-medium);
+            margin-top: var(--space-1);
+        }
+        
+        .results-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+            margin-top: var(--space-6);
+        }
+        
+        @media (min-width: 768px) {
+            .results-actions {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+        
+        /* Error Section */
+        .error-section {
+            text-align: center;
+            padding: var(--space-8);
+            background: var(--color-error-light);
+            border: 2px solid var(--color-error);
+            border-radius: var(--radius-xl);
+            margin: var(--space-6) 0;
+        }
+        
+        .error-title {
+            color: var(--color-error);
+            margin-bottom: var(--space-4);
+        }
+        
+        .error-message {
+            color: var(--color-gray-700);
+            margin-bottom: var(--space-6);
+        }
+        
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+        
+        @media (min-width: 768px) {
+            .error-actions {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+        
+        /* ==========================================================================
+           ANIMATIONS & KEYFRAMES
+           ========================================================================== */
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes checkmark-bounce {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes selection-pulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: var(--shadow-md);
+            }
+            50% { 
+                transform: scale(1.02);
+                box-shadow: var(--shadow-lg);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: var(--shadow-md);
+            }
+        }
+        
+        @keyframes fade-in {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        @keyframes slide-in-left {
+            from { 
+                opacity: 0; 
+                transform: translateX(-30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+        
+        @keyframes slide-in-right {
+            from { 
+                opacity: 0; 
+                transform: translateX(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Animation Classes */
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out;
+        }
+        
+        .animate-slide-in-left {
+            animation: slide-in-left 0.5s ease-out;
+        }
+        
+        .animate-slide-in-right {
+            animation: slide-in-right 0.5s ease-out;
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .animate-selection {
+            animation: selection-pulse 0.4s ease-out;
+        }
+        
+        /* ==========================================================================
+           ACCESSIBILITY ENHANCEMENTS
+           ========================================================================== */
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .choice-button {
+                border-width: 4px;
+            }
+            
+            .choice-button.selected {
+                border-width: 5px;
+            }
+            
+            .btn {
+                border-width: 3px;
+            }
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .choice-button:hover,
+            .btn:hover,
+            .image-button:hover {
+                transform: none;
+            }
+        }
+        
+        /* Focus visible styles for better keyboard navigation */
+        .choice-button:focus-visible {
+            outline: 3px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        .btn:focus-visible {
+            outline: 3px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        .image-button:focus-visible {
+            outline: 3px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Application Container -->
+    <div id="app" class="app-container">
+        <!-- Hidden description for screen readers -->
+        <div id="selected-choice-description" class="sr-only">
+            Opción seleccionada
+        </div>
+        
+        <!-- Header Section -->
+        <header class="header" role="banner">
+            <h1 class="header__title">QUIZ3</h1>
+            <div class="header__subtitle">Interactive Quiz Application</div>
+        </header>
+
+        <!-- Progress Bar Section -->
+        <section class="progress-section" aria-label="Quiz Progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar__fill"></div>
+                <div class="progress-bar__text">
+                    <span id="current-question">0</span> / <span id="total-questions">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <h2>Cargando quiz...</h2>
+                <div class="countdown-timer">
+                    <span id="countdown-text">Tiempo restante: </span>
+                    <span id="countdown-value">90</span>s
+                </div>
+                <button id="retry-button" class="btn btn--secondary hidden">Reintentar</button>
+                <button id="fallback-button" class="btn btn--secondary hidden">Usar datos locales</button>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <main class="quiz-container" role="main">
+            
+            <!-- Question Section -->
+            <section class="question-section" aria-label="Current Question">
+                <div class="question-prompt">
+                    <button id="prompt-image" class="image-button" type="button" aria-label="Escuchar pregunta">
+                        <img id="prompt-img" src="" alt="" class="prompt-image">
+                        <div class="image-button__overlay">
+                            <span class="sr-only">Hacer clic para escuchar</span>
+                        </div>
+                    </button>
+                    <p id="prompt-caption" class="question-caption"></p>
+                </div>
+            </section>
+
+            <!-- Choices Section -->
+            <section class="choices-section" aria-label="Answer Options">
+                <div class="choices-grid" role="radiogroup" aria-label="Selecciona tu respuesta">
+                    <button id="choice-0" class="choice-button" type="button" data-choice="0" aria-describedby="choice-0-caption">
+                        <div class="choice-content">
+                            <img class="choice-image" src="" alt="">
+                            <div class="choice-indicator" aria-hidden="true">
+                                <span class="choice-number">1</span>
+                                <span class="choice-checkmark">✓</span>
+                            </div>
+                        </div>
+                        <p id="choice-0-caption" class="choice-caption"></p>
+                    </button>
+                    
+                    <button id="choice-1" class="choice-button" type="button" data-choice="1" aria-describedby="choice-1-caption">
+                        <div class="choice-content">
+                            <img class="choice-image" src="" alt="">
+                            <div class="choice-indicator" aria-hidden="true">
+                                <span class="choice-number">2</span>
+                                <span class="choice-checkmark">✓</span>
+                            </div>
+                        </div>
+                        <p id="choice-1-caption" class="choice-caption"></p>
+                    </button>
+                    
+                    <button id="choice-2" class="choice-button" type="button" data-choice="2" aria-describedby="choice-2-caption">
+                        <div class="choice-content">
+                            <img class="choice-image" src="" alt="">
+                            <div class="choice-indicator" aria-hidden="true">
+                                <span class="choice-number">3</span>
+                                <span class="choice-checkmark">✓</span>
+                            </div>
+                        </div>
+                        <p id="choice-2-caption" class="choice-caption"></p>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Navigation Section -->
+            <section class="navigation-section" aria-label="Quiz Navigation">
+                <div class="navigation-controls">
+                    <button id="prev-button" class="btn btn--secondary" type="button" disabled>
+                        ← Anterior
+                    </button>
+                    <div class="navigation-info">
+                        <span class="keyboard-hint">Usa las teclas 1, 2, 3 para seleccionar • Enter para continuar</span>
+                    </div>
+                    <button id="next-button" class="btn btn--primary" type="button" disabled>
+                        Siguiente →
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Results Section -->
+        <section id="results-section" class="results-section hidden" role="region" aria-label="Quiz Results">
+            <div class="results-content">
+                <h2 class="results-title">¡Quiz Completado!</h2>
+                
+                <div class="score-display">
+                    <div class="score-circle">
+                        <span id="final-score" class="score-number">0 / 0</span>
+                        <span class="score-label">Puntuación</span>
+                    </div>
+                </div>
+
+                <div class="results-summary">
+                    <p id="results-message" class="results-message"></p>
+                </div>
+
+                <div class="results-actions">
+                    <button id="restart-button" class="btn btn--primary">
+                        🔄 Reiniciar Quiz
+                    </button>
+                    <button id="download-button" class="btn btn--secondary">
+                        📄 Descargar Resultados PDF
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Section -->
+        <section id="error-section" class="error-section hidden" role="alert" aria-live="assertive">
+            <div class="error-content">
+                <h2 class="error-title">Error al cargar el quiz</h2>
+                <p id="error-message" class="error-message"></p>
+                <div class="error-actions">
+                    <button id="error-retry-button" class="btn btn--primary">Reintentar</button>
+                    <button id="error-fallback-button" class="btn btn--secondary">Usar datos locales</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Screen Reader Only Content -->
+    <div class="sr-only" aria-live="polite" id="sr-announcements"></div>
+
+    <script>
+        // Global variables and configuration
+        let quizData = [];
+        let state = {
+            currentIndex: 0,
+            selections: [],
+            score: 0
+        };
+        
+        // Configuration
+        const CONFIG = {
+            GOOGLE_SERVICE_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', // Replace with actual URL
+            TIMEOUT_DURATION: 90000, // 90 seconds
+            selectedVoice: null,
+            selectedLanguage: 'es-ES',
+            speechSettings: {
+                rate: 0.9,
+                pitch: 1.0,
+                volume: 1.0
+            }
+        };
+
+        // ==========================================================================
+        // QUIZ STATE MANAGEMENT SYSTEM
+        // ==========================================================================
+
+        /**
+         * Initializes the quiz state with proper structure and validation
+         * @param {number} questionCount - Total number of questions in the quiz
+         * @returns {Object} Initialized state object
+         */
+        function initializeState(questionCount) {
+            if (!questionCount || questionCount <= 0) {
+                throw new Error('Invalid question count for state initialization');
+            }
+            
+            const newState = {
+                currentIndex: 0,
+                selections: Array.from({ length: questionCount }, () => null),
+                score: 0,
+                isCompleted: false,
+                startTime: Date.now(),
+                endTime: null
+            };
+            
+            console.log('State initialized for', questionCount, 'questions');
+            return newState;
+        }
+
+        /**
+         * Validates the current state structure and data integrity
+         * @param {Object} stateToValidate - State object to validate
+         * @returns {boolean} True if state is valid
+         * @throws {Error} If state is invalid
+         */
+        function validateState(stateToValidate) {
+            if (!stateToValidate || typeof stateToValidate !== 'object') {
+                throw new Error('State must be a valid object');
+            }
+            
+            // Check required properties
+            const requiredProps = ['currentIndex', 'selections', 'score', 'isCompleted'];
+            for (const prop of requiredProps) {
+                if (!(prop in stateToValidate)) {
+                    throw new Error(`State missing required property: ${prop}`);
+                }
+            }
+            
+            // Validate currentIndex
+            if (typeof stateToValidate.currentIndex !== 'number' || stateToValidate.currentIndex < 0) {
+                throw new Error('currentIndex must be a non-negative number');
+            }
+            
+            // Validate selections array
+            if (!Array.isArray(stateToValidate.selections)) {
+                throw new Error('selections must be an array');
+            }
+            
+            // Validate score
+            if (typeof stateToValidate.score !== 'number' || stateToValidate.score < 0) {
+                throw new Error('score must be a non-negative number');
+            }
+            
+            // Validate isCompleted
+            if (typeof stateToValidate.isCompleted !== 'boolean') {
+                throw new Error('isCompleted must be a boolean');
+            }
+            
+            // Cross-validate with quiz data if available
+            if (quizData.length > 0) {
+                if (stateToValidate.currentIndex >= quizData.length) {
+                    throw new Error(`currentIndex (${stateToValidate.currentIndex}) exceeds quiz length (${quizData.length})`);
+                }
+                
+                if (stateToValidate.selections.length !== quizData.length) {
+                    throw new Error(`selections array length (${stateToValidate.selections.length}) doesn't match quiz length (${quizData.length})`);
+                }
+            }
+            
+            return true;
+        }
+
+        /**
+         * Updates the current question index with validation
+         * @param {number} newIndex - New question index
+         * @returns {boolean} True if update was successful
+         */
+        function updateCurrentIndex(newIndex) {
+            return updateStateWithPersistence(() => {
+                if (typeof newIndex !== 'number' || newIndex < 0) {
+                    throw new Error('Index must be a non-negative number');
+                }
+                
+                if (quizData.length > 0 && newIndex >= quizData.length) {
+                    throw new Error(`Index ${newIndex} exceeds quiz length ${quizData.length}`);
+                }
+                
+                const oldIndex = state.currentIndex;
+                state.currentIndex = newIndex;
+                
+                console.log(`Question index updated: ${oldIndex} → ${newIndex}`);
+                
+                return true;
+            }, 'update current index');
+        }
+
+        /**
+         * Records a user's answer selection for a specific question
+         * @param {number} questionIndex - Index of the question
+         * @param {number} choiceIndex - Index of the selected choice (0-2)
+         * @returns {boolean} True if selection was recorded successfully
+         */
+        function recordSelection(questionIndex, choiceIndex) {
+            return updateStateWithPersistence(() => {
+                // Validate inputs
+                if (typeof questionIndex !== 'number' || questionIndex < 0) {
+                    throw new Error('Question index must be a non-negative number');
+                }
+                
+                if (typeof choiceIndex !== 'number' || choiceIndex < 0 || choiceIndex > 2) {
+                    throw new Error('Choice index must be a number between 0 and 2');
+                }
+                
+                if (questionIndex >= state.selections.length) {
+                    throw new Error(`Question index ${questionIndex} exceeds selections array length`);
+                }
+                
+                // Record the selection
+                const oldSelection = state.selections[questionIndex];
+                state.selections[questionIndex] = choiceIndex;
+                
+                console.log(`Selection recorded for question ${questionIndex}: ${oldSelection} → ${choiceIndex}`);
+                
+                return true;
+            }, 'record selection');
+        }
+
+        /**
+         * Retrieves the user's selection for a specific question
+         * @param {number} questionIndex - Index of the question
+         * @returns {number|null} Selected choice index or null if no selection
+         */
+        function getSelection(questionIndex) {
+            try {
+                if (typeof questionIndex !== 'number' || questionIndex < 0) {
+                    throw new Error('Question index must be a non-negative number');
+                }
+                
+                if (questionIndex >= state.selections.length) {
+                    throw new Error(`Question index ${questionIndex} exceeds selections array length`);
+                }
+                
+                return state.selections[questionIndex];
+                
+            } catch (error) {
+                console.error('Failed to get selection:', error);
+                return null;
+            }
+        }
+
+        /**
+         * Checks if all questions have been answered
+         * @returns {boolean} True if all questions are answered
+         */
+        function areAllQuestionsAnswered() {
+            return state.selections.every(selection => selection !== null);
+        }
+
+        /**
+         * Marks the quiz as completed and records end time
+         * @returns {boolean} True if successfully marked as completed
+         */
+        function markQuizCompleted() {
+            return updateStateWithPersistence(() => {
+                state.isCompleted = true;
+                state.endTime = Date.now();
+                
+                console.log('Quiz marked as completed');
+                
+                return true;
+            }, 'mark quiz completed');
+        }
+
+        /**
+         * Resets the quiz state to initial values
+         * @param {number} questionCount - Number of questions for the new state
+         * @returns {boolean} True if reset was successful
+         */
+        function resetState(questionCount = null) {
+            return updateStateWithPersistence(() => {
+                const count = questionCount || quizData.length;
+                
+                if (count <= 0) {
+                    throw new Error('Cannot reset state without valid question count');
+                }
+                
+                // Reset to initial state
+                state.currentIndex = 0;
+                state.selections = Array.from({ length: count }, () => null);
+                state.score = 0;
+                state.isCompleted = false;
+                state.startTime = Date.now();
+                state.endTime = null;
+                
+                console.log('State reset for', count, 'questions');
+                
+                // Clear any persisted state since we're starting fresh
+                clearPersistedState();
+                
+                return true;
+            }, 'reset state');
+        }
+
+        /**
+         * Creates a deep copy of the current state for backup purposes
+         * @returns {Object} Deep copy of current state
+         */
+        function backupState() {
+            try {
+                const backup = {
+                    currentIndex: state.currentIndex,
+                    selections: [...state.selections],
+                    score: state.score,
+                    isCompleted: state.isCompleted,
+                    startTime: state.startTime,
+                    endTime: state.endTime
+                };
+                
+                console.log('State backup created');
+                return backup;
+                
+            } catch (error) {
+                console.error('Failed to create state backup:', error);
+                return null;
+            }
+        }
+
+        /**
+         * Restores state from a backup with validation
+         * @param {Object} backup - Previously backed up state
+         * @returns {boolean} True if restore was successful
+         */
+        function restoreState(backup) {
+            try {
+                if (!backup || typeof backup !== 'object') {
+                    throw new Error('Invalid backup object');
+                }
+                
+                // Validate backup before restoring
+                validateState(backup);
+                
+                // Restore state properties
+                state.currentIndex = backup.currentIndex;
+                state.selections = [...backup.selections];
+                state.score = backup.score;
+                state.isCompleted = backup.isCompleted;
+                state.startTime = backup.startTime;
+                state.endTime = backup.endTime;
+                
+                console.log('State restored from backup');
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Failed to restore state from backup:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Gets comprehensive state information for debugging
+         * @returns {Object} State information object
+         */
+        function getStateInfo() {
+            const answeredCount = state.selections.filter(s => s !== null).length;
+            const totalQuestions = state.selections.length;
+            const completionPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+            
+            return {
+                currentIndex: state.currentIndex,
+                totalQuestions: totalQuestions,
+                answeredCount: answeredCount,
+                completionPercentage: Math.round(completionPercentage),
+                isCompleted: state.isCompleted,
+                score: state.score,
+                startTime: state.startTime,
+                endTime: state.endTime,
+                duration: state.endTime ? state.endTime - state.startTime : Date.now() - state.startTime
+            };
+        }
+
+        /**
+         * Attempts to recover from state corruption or validation errors
+         * @param {Object} corruptedState - The corrupted state object
+         * @returns {boolean} True if recovery was successful
+         */
+        function recoverFromStateError(corruptedState = null) {
+            try {
+                console.warn('Attempting state recovery...');
+                
+                // If we have quiz data, try to reconstruct a valid state
+                if (quizData && quizData.length > 0) {
+                    const recoveredState = {
+                        currentIndex: 0,
+                        selections: Array.from({ length: quizData.length }, () => null),
+                        score: 0,
+                        isCompleted: false,
+                        startTime: Date.now(),
+                        endTime: null
+                    };
+                    
+                    // Try to preserve some data from corrupted state if possible
+                    if (corruptedState && typeof corruptedState === 'object') {
+                        // Preserve valid currentIndex if within bounds
+                        if (typeof corruptedState.currentIndex === 'number' && 
+                            corruptedState.currentIndex >= 0 && 
+                            corruptedState.currentIndex < quizData.length) {
+                            recoveredState.currentIndex = corruptedState.currentIndex;
+                        }
+                        
+                        // Preserve valid selections if array length matches
+                        if (Array.isArray(corruptedState.selections) && 
+                            corruptedState.selections.length === quizData.length) {
+                            recoveredState.selections = corruptedState.selections.map(selection => {
+                                return (typeof selection === 'number' && selection >= 0 && selection <= 2) ? selection : null;
+                            });
+                        }
+                        
+                        // Preserve valid score
+                        if (typeof corruptedState.score === 'number' && corruptedState.score >= 0) {
+                            recoveredState.score = corruptedState.score;
+                        }
+                        
+                        // Preserve completion status and timestamps if valid
+                        if (typeof corruptedState.isCompleted === 'boolean') {
+                            recoveredState.isCompleted = corruptedState.isCompleted;
+                        }
+                        
+                        if (typeof corruptedState.startTime === 'number' && corruptedState.startTime > 0) {
+                            recoveredState.startTime = corruptedState.startTime;
+                        }
+                        
+                        if (typeof corruptedState.endTime === 'number' && corruptedState.endTime > 0) {
+                            recoveredState.endTime = corruptedState.endTime;
+                        }
+                    }
+                    
+                    // Apply the recovered state
+                    state = recoveredState;
+                    
+                    // Validate the recovered state
+                    validateState(state);
+                    
+                    console.log('State recovery successful');
+                    announceToScreenReader('Estado del quiz recuperado exitosamente');
+                    
+                    return true;
+                    
+                } else {
+                    throw new Error('Cannot recover state without valid quiz data');
+                }
+                
+            } catch (error) {
+                console.error('State recovery failed:', error);
+                
+                // Last resort: create minimal valid state
+                try {
+                    state = {
+                        currentIndex: 0,
+                        selections: [],
+                        score: 0,
+                        isCompleted: false,
+                        startTime: Date.now(),
+                        endTime: null
+                    };
+                    
+                    console.log('Created minimal fallback state');
+                    return false; // Indicate partial recovery
+                    
+                } catch (finalError) {
+                    console.error('Complete state recovery failure:', finalError);
+                    return false;
+                }
+            }
+        }
+
+        /**
+         * Safely executes state operations with automatic error recovery
+         * @param {Function} operation - State operation to execute
+         * @param {string} operationName - Name of the operation for logging
+         * @returns {*} Result of the operation or null if failed
+         */
+        function safeStateOperation(operation, operationName = 'state operation') {
+            try {
+                const result = operation();
+                
+                // Validate state after operation
+                validateState(state);
+                
+                return result;
+                
+            } catch (error) {
+                console.error(`${operationName} failed:`, error);
+                
+                // Attempt state recovery
+                const recoverySuccessful = recoverFromStateError(state);
+                
+                if (recoverySuccessful) {
+                    console.log(`${operationName} recovered, retrying...`);
+                    try {
+                        return operation();
+                    } catch (retryError) {
+                        console.error(`${operationName} failed again after recovery:`, retryError);
+                        return null;
+                    }
+                } else {
+                    console.error(`${operationName} could not be recovered`);
+                    return null;
+                }
+            }
+        }
+
+        /**
+         * Persists current state to session storage for navigation persistence
+         * @returns {boolean} True if persistence was successful
+         */
+        function persistState() {
+            try {
+                if (typeof Storage === 'undefined') {
+                    console.warn('Session storage not available, state persistence disabled');
+                    return false;
+                }
+                
+                const stateToSave = {
+                    currentIndex: state.currentIndex,
+                    selections: [...state.selections],
+                    score: state.score,
+                    isCompleted: state.isCompleted,
+                    startTime: state.startTime,
+                    endTime: state.endTime,
+                    timestamp: Date.now()
+                };
+                
+                sessionStorage.setItem('quiz3_state', JSON.stringify(stateToSave));
+                console.log('State persisted to session storage');
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Failed to persist state:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Restores state from session storage if available
+         * @returns {boolean} True if state was restored successfully
+         */
+        function restorePersistedState() {
+            try {
+                if (typeof Storage === 'undefined') {
+                    console.warn('Session storage not available, cannot restore state');
+                    return false;
+                }
+                
+                const savedState = sessionStorage.getItem('quiz3_state');
+                if (!savedState) {
+                    console.log('No persisted state found');
+                    return false;
+                }
+                
+                const parsedState = JSON.parse(savedState);
+                
+                // Check if the saved state is recent (within 24 hours)
+                const maxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+                if (parsedState.timestamp && (Date.now() - parsedState.timestamp) > maxAge) {
+                    console.log('Persisted state is too old, ignoring');
+                    clearPersistedState();
+                    return false;
+                }
+                
+                // Validate the saved state structure
+                validateState(parsedState);
+                
+                // Restore the state
+                state.currentIndex = parsedState.currentIndex;
+                state.selections = [...parsedState.selections];
+                state.score = parsedState.score;
+                state.isCompleted = parsedState.isCompleted;
+                state.startTime = parsedState.startTime;
+                state.endTime = parsedState.endTime;
+                
+                console.log('State restored from session storage');
+                announceToScreenReader('Estado del quiz restaurado desde sesión anterior');
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Failed to restore persisted state:', error);
+                clearPersistedState(); // Clear corrupted data
+                return false;
+            }
+        }
+
+        /**
+         * Clears persisted state from session storage
+         * @returns {boolean} True if clearing was successful
+         */
+        function clearPersistedState() {
+            try {
+                if (typeof Storage !== 'undefined') {
+                    sessionStorage.removeItem('quiz3_state');
+                    console.log('Persisted state cleared');
+                }
+                return true;
+            } catch (error) {
+                console.error('Failed to clear persisted state:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Enhanced state update function that includes persistence
+         * @param {Function} updateFunction - Function that updates the state
+         * @param {string} operationName - Name of the operation for logging
+         * @returns {*} Result of the update function
+         */
+        function updateStateWithPersistence(updateFunction, operationName = 'state update') {
+            return safeStateOperation(() => {
+                const result = updateFunction();
+                
+                // Persist state after successful update
+                persistState();
+                
+                return result;
+            }, operationName);
+        }
+
+        // State management system initialization check
+        console.log('Quiz state management system loaded successfully');
+        
+        // ==========================================================================
+        // QUESTION RENDERING AND SHUFFLING LOGIC
+        // ==========================================================================
+
+        /**
+         * Shuffles an array using the Fisher-Yates algorithm
+         * @param {Array} array - Array to shuffle (will not be modified)
+         * @returns {Array} New shuffled array
+         */
+        function shuffleArray(array) {
+            if (!Array.isArray(array)) {
+                throw new Error('Input must be an array');
+            }
+            
+            if (array.length === 0) {
+                return [];
+            }
+            
+            // Create a copy to avoid modifying the original array
+            const shuffled = [...array];
+            
+            // Fisher-Yates shuffle algorithm
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            console.log('Array shuffled using Fisher-Yates algorithm');
+            return shuffled;
+        }
+
+        /**
+         * Shuffles the choices for a question and tracks the correct answer index
+         * @param {Object} question - Question object with choices array
+         * @returns {Object} Question with shuffled choices and correct index tracking
+         */
+        function shuffleQuestionChoices(question) {
+            if (!question || !question.choices || !Array.isArray(question.choices)) {
+                throw new Error('Invalid question object or choices array');
+            }
+            
+            if (question.choices.length !== 3) {
+                throw new Error('Question must have exactly 3 choices');
+            }
+            
+            // Find the original correct answer index
+            const originalCorrectIndex = question.choices.findIndex(
+                choice => choice.id === question.correctAnswerId
+            );
+            
+            if (originalCorrectIndex === -1) {
+                throw new Error('Correct answer ID not found in choices');
+            }
+            
+            // Shuffle the choices array
+            const shuffledChoices = shuffleArray(question.choices);
+            
+            // Find the new index of the correct answer after shuffling
+            const newCorrectIndex = shuffledChoices.findIndex(
+                choice => choice.id === question.correctAnswerId
+            );
+            
+            // Create the question with shuffled data
+            const shuffledQuestion = {
+                ...question,
+                choices: shuffledChoices,
+                shuffledData: {
+                    choices: shuffledChoices,
+                    correctIndex: newCorrectIndex,
+                    originalCorrectIndex: originalCorrectIndex
+                }
+            };
+            
+            console.log(`Question choices shuffled. Correct answer moved from index ${originalCorrectIndex} to ${newCorrectIndex}`);
+            
+            return shuffledQuestion;
+        }
+
+        /**
+         * Shuffles all questions in the quiz data
+         * @param {Object} quizDataToShuffle - Quiz data object with questions array
+         * @returns {Object} Quiz data with all questions shuffled
+         */
+        function shuffleAllQuestions(quizDataToShuffle) {
+            if (!quizDataToShuffle || !Array.isArray(quizDataToShuffle.questions)) {
+                throw new Error('Invalid quiz data structure');
+            }
+            
+            const shuffledQuizData = {
+                ...quizDataToShuffle,
+                questions: quizDataToShuffle.questions.map(question => shuffleQuestionChoices(question))
+            };
+            
+            console.log(`Shuffled choices for ${shuffledQuizData.questions.length} questions`);
+            
+            return shuffledQuizData;
+        }
+
+        /**
+         * Renders the current question to the DOM
+         * @param {number} questionIndex - Index of the question to render
+         * @returns {boolean} True if rendering was successful
+         */
+        function renderQuestion(questionIndex = state.currentIndex) {
+            try {
+                // Validate inputs
+                if (typeof questionIndex !== 'number' || questionIndex < 0) {
+                    throw new Error('Question index must be a non-negative number');
+                }
+                
+                if (!quizData || !Array.isArray(quizData.questions) || quizData.questions.length === 0) {
+                    throw new Error('No quiz data available');
+                }
+                
+                if (questionIndex >= quizData.questions.length) {
+                    throw new Error(`Question index ${questionIndex} exceeds available questions`);
+                }
+                
+                const question = quizData.questions[questionIndex];
+                
+                if (!question) {
+                    throw new Error(`Question at index ${questionIndex} is undefined`);
+                }
+                
+                // Update progress bar
+                updateProgressBar(questionIndex + 1, quizData.questions.length);
+                
+                // Render prompt section
+                renderPrompt(question.prompt);
+                
+                // Render choices section
+                renderChoices(question.choices, questionIndex);
+                
+                // Update navigation buttons
+                updateNavigationButtons(questionIndex);
+                
+                // Add animation class for smooth transitions
+                const quizContainer = document.querySelector('.quiz-container');
+                quizContainer.classList.remove('animate-fade-in');
+                // Force reflow to restart animation
+                quizContainer.offsetHeight;
+                quizContainer.classList.add('animate-fade-in');
+                
+                console.log(`Question ${questionIndex + 1} rendered successfully`);
+                
+                // Announce to screen readers
+                announceToScreenReader(`Pregunta ${questionIndex + 1} de ${quizData.questions.length}`);
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Failed to render question:', error);
+                showErrorMessage(error, 'rendering');
+                return false;
+            }
+        }
+
+        /**
+         * Renders the question prompt (image and caption)
+         * @param {Object} prompt - Prompt object with imageBase64 and caption
+         */
+        function renderPrompt(prompt) {
+            if (!prompt) {
+                throw new Error('Prompt object is required');
+            }
+            
+            const promptImage = document.getElementById('prompt-image');
+            const promptImg = document.getElementById('prompt-img');
+            const promptCaption = document.getElementById('prompt-caption');
+            
+            if (!promptImage || !promptImg || !promptCaption) {
+                throw new Error('Required prompt DOM elements not found');
+            }
+            
+            // Set image source and alt text
+            if (prompt.imageBase64) {
+                promptImg.src = prompt.imageBase64;
+                promptImg.alt = prompt.caption || 'Imagen de la pregunta';
+            } else {
+                promptImg.src = '';
+                promptImg.alt = 'Sin imagen disponible';
+            }
+            
+            // Set caption text
+            promptCaption.textContent = prompt.caption || '';
+            
+            // Update button aria-label for accessibility
+            promptImage.setAttribute('aria-label', `Escuchar pregunta: ${prompt.caption || 'Sin descripción'}`);
+            
+            // Handle image loading errors
+            promptImg.onerror = function() {
+                console.warn('Failed to load prompt image');
+                this.alt = 'Error al cargar la imagen de la pregunta';
+                this.src = ''; // Clear broken image
+            };
+            
+            console.log('Prompt rendered:', prompt.caption);
+        }
+
+        /**
+         * Renders the answer choices with proper selection state
+         * @param {Array} choices - Array of choice objects
+         * @param {number} questionIndex - Current question index
+         */
+        function renderChoices(choices, questionIndex) {
+            if (!Array.isArray(choices) || choices.length !== 3) {
+                throw new Error('Choices must be an array of exactly 3 items');
+            }
+            
+            const currentSelection = getSelection(questionIndex);
+            
+            choices.forEach((choice, index) => {
+                const choiceButton = document.getElementById(`choice-${index}`);
+                const choiceImg = choiceButton.querySelector('.choice-image');
+                const choiceCaption = document.getElementById(`choice-${index}-caption`);
+                const choiceNumber = choiceButton.querySelector('.choice-number');
+                
+                if (!choiceButton || !choiceImg || !choiceCaption || !choiceNumber) {
+                    throw new Error(`Required choice DOM elements not found for choice ${index}`);
+                }
+                
+                // Set image source and alt text
+                if (choice.imageBase64) {
+                    choiceImg.src = choice.imageBase64;
+                    choiceImg.alt = choice.caption || `Opción ${index + 1}`;
+                } else {
+                    choiceImg.src = '';
+                    choiceImg.alt = 'Sin imagen disponible';
+                }
+                
+                // Set caption text
+                choiceCaption.textContent = choice.caption || `Opción ${index + 1}`;
+                
+                // Update choice number display
+                choiceNumber.textContent = index + 1;
+                
+                // Set selection state
+                if (currentSelection === index) {
+                    choiceButton.classList.add('selected');
+                    choiceButton.setAttribute('aria-pressed', 'true');
+                } else {
+                    choiceButton.classList.remove('selected');
+                    choiceButton.setAttribute('aria-pressed', 'false');
+                }
+                
+                // Update accessibility attributes
+                choiceButton.setAttribute('aria-label', 
+                    `Opción ${index + 1}: ${choice.caption || 'Sin descripción'}${currentSelection === index ? ' (seleccionada)' : ''}`
+                );
+                
+                // Handle image loading errors
+                choiceImg.onerror = function() {
+                    console.warn(`Failed to load choice ${index} image`);
+                    this.alt = `Error al cargar imagen de opción ${index + 1}`;
+                    this.src = ''; // Clear broken image
+                };
+                
+                console.log(`Choice ${index + 1} rendered:`, choice.caption);
+            });
+            
+            // Set up event listeners for choice buttons after rendering
+            setupChoiceEventListeners();
+        }
+
+        /**
+         * Updates the progress bar display
+         * @param {number} current - Current question number (1-based)
+         * @param {number} total - Total number of questions
+         */
+        function updateProgressBar(current, total) {
+            const progressFill = document.querySelector('.progress-bar__fill');
+            const currentQuestionSpan = document.getElementById('current-question');
+            const totalQuestionsSpan = document.getElementById('total-questions');
+            const progressBar = document.querySelector('.progress-bar');
+            
+            if (!progressFill || !currentQuestionSpan || !totalQuestionsSpan || !progressBar) {
+                console.warn('Progress bar elements not found');
+                return;
+            }
+            
+            // Calculate progress percentage
+            const percentage = total > 0 ? (current / total) * 100 : 0;
+            
+            // Update progress bar fill
+            progressFill.style.width = `${percentage}%`;
+            
+            // Update text display
+            currentQuestionSpan.textContent = current;
+            totalQuestionsSpan.textContent = total;
+            
+            // Update ARIA attributes
+            progressBar.setAttribute('aria-valuenow', percentage);
+            progressBar.setAttribute('aria-valuetext', `Pregunta ${current} de ${total}`);
+            
+            console.log(`Progress updated: ${current}/${total} (${Math.round(percentage)}%)`);
+        }
+
+        /**
+         * Updates navigation button states based on current position
+         * @param {number} questionIndex - Current question index
+         */
+        function updateNavigationButtons(questionIndex) {
+            const prevButton = document.getElementById('prev-button');
+            const nextButton = document.getElementById('next-button');
+            
+            if (!prevButton || !nextButton) {
+                console.warn('Navigation buttons not found');
+                return;
+            }
+            
+            const totalQuestions = quizData.questions.length;
+            const isFirstQuestion = questionIndex === 0;
+            const isLastQuestion = questionIndex === totalQuestions - 1;
+            const hasSelection = getSelection(questionIndex) !== null;
+            
+            // Update previous button
+            prevButton.disabled = isFirstQuestion;
+            prevButton.setAttribute('aria-disabled', isFirstQuestion.toString());
+            
+            // Update next button
+            if (isLastQuestion) {
+                nextButton.textContent = 'Finalizar';
+                nextButton.setAttribute('aria-label', 'Finalizar quiz');
+            } else {
+                nextButton.textContent = 'Siguiente →';
+                nextButton.setAttribute('aria-label', 'Ir a la siguiente pregunta');
+            }
+            
+            // Enable/disable next button based on selection
+            nextButton.disabled = !hasSelection;
+            nextButton.setAttribute('aria-disabled', (!hasSelection).toString());
+            
+            console.log(`Navigation updated: prev=${!isFirstQuestion}, next=${hasSelection}, isLast=${isLastQuestion}`);
+        }
+
+        /**
+         * Navigates to the next question or finishes the quiz
+         * @returns {boolean} True if navigation was successful
+         */
+        function nextQuestion() {
+            try {
+                if (!quizData || !Array.isArray(quizData) || quizData.length === 0) {
+                    console.error('No quiz data available for navigation');
+                    return false;
+                }
+                
+                const currentIndex = state.currentIndex;
+                const totalQuestions = quizData.length;
+                // Allow navigation even without selection (as per requirements)
+                
+                // Check if this is the last question
+                if (currentIndex >= totalQuestions - 1) {
+                    // This is the last question, finish the quiz
+                    console.log('Last question reached, finishing quiz');
+                    finishQuiz();
+                    return true;
+                }
+                
+                // Navigate to next question
+                const nextIndex = currentIndex + 1;
+                
+                return updateStateWithPersistence(() => {
+                    state.currentIndex = nextIndex;
+                    
+                    // Render the next question
+                    const renderSuccess = renderQuestion(nextIndex);
+                    
+                    if (renderSuccess) {
+                        // Update progress bar
+                        updateProgressBar(nextIndex);
+                        
+                        // Restore any previous selection for this question
+                        restoreChoiceSelection(nextIndex);
+                        
+                        // Update navigation buttons
+                        updateNavigationButtons(nextIndex);
+                        
+                        // Announce navigation to screen readers
+                        announceToScreenReader(`Pregunta ${nextIndex + 1} de ${totalQuestions}`);
+                        
+                        console.log(`Navigated to question ${nextIndex + 1}/${totalQuestions}`);
+                        return true;
+                    } else {
+                        throw new Error('Failed to render next question');
+                    }
+                }, 'next question navigation');
+                
+            } catch (error) {
+                console.error('Failed to navigate to next question:', error);
+                announceToScreenReader('Error al navegar a la siguiente pregunta');
+                return false;
+            }
+        }
+
+        /**
+         * Navigates to the previous question
+         * @returns {boolean} True if navigation was successful
+         */
+        function prevQuestion() {
+            try {
+                if (!quizData || !Array.isArray(quizData) || quizData.length === 0) {
+                    console.error('No quiz data available for navigation');
+                    return false;
+                }
+                
+                const currentIndex = state.currentIndex;
+                const totalQuestions = quizData.length;
+                
+                // Check if this is the first question
+                if (currentIndex <= 0) {
+                    console.warn('Already at first question, cannot go back');
+                    announceToScreenReader('Ya estás en la primera pregunta');
+                    return false;
+                }
+                
+                // Navigate to previous question
+                const prevIndex = currentIndex - 1;
+                
+                return updateStateWithPersistence(() => {
+                    state.currentIndex = prevIndex;
+                    
+                    // Render the previous question
+                    const renderSuccess = renderQuestion(prevIndex);
+                    
+                    if (renderSuccess) {
+                        // Update progress bar
+                        updateProgressBar(prevIndex);
+                        
+                        // Restore any previous selection for this question
+                        restoreChoiceSelection(prevIndex);
+                        
+                        // Update navigation buttons
+                        updateNavigationButtons(prevIndex);
+                        
+                        // Announce navigation to screen readers
+                        announceToScreenReader(`Pregunta ${prevIndex + 1} de ${totalQuestions}`);
+                        
+                        console.log(`Navigated back to question ${prevIndex + 1}/${totalQuestions}`);
+                        return true;
+                    } else {
+                        throw new Error('Failed to render previous question');
+                    }
+                }, 'previous question navigation');
+                
+            } catch (error) {
+                console.error('Failed to navigate to previous question:', error);
+                announceToScreenReader('Error al navegar a la pregunta anterior');
+                return false;
+            }
+        }
+
+        /**
+         * Finishes the quiz and shows results
+         * @returns {boolean} True if quiz was finished successfully
+         */
+        function finishQuiz() {
+            try {
+                if (!quizData || !quizData.questions) {
+                    throw new Error('No quiz data available to finish quiz');
+                }
+                
+                // Mark quiz as completed
+                return updateStateWithPersistence(() => {
+                    state.isCompleted = true;
+                    state.endTime = Date.now();
+                    
+                    // Calculate final score
+                    const finalScore = calculateScore();
+                    state.score = finalScore;
+                    
+                    // Show results
+                    showResults();
+                    
+                    // Announce completion
+                    const totalQuestions = quizData.questions.length;
+                    announceToScreenReader(`Quiz completado. Tu puntuación es ${finalScore} de ${totalQuestions}`);
+                    
+                    console.log(`Quiz finished. Score: ${finalScore}/${totalQuestions}`);
+                    return true;
+                }, 'finish quiz');
+                
+            } catch (error) {
+                console.error('Failed to finish quiz:', error);
+                announceToScreenReader('Error al finalizar el quiz');
+                return false;
+            }
+        }
+
+        // ==========================================================================
+        // ANSWER SELECTION AND VISUAL FEEDBACK
+        // ==========================================================================
+
+        /**
+         * Handles answer choice selection with validation and feedback
+         * @param {number} choiceIndex - Index of the selected choice (0-2)
+         * @param {number} questionIndex - Index of the current question (optional, defaults to current)
+         * @returns {boolean} True if selection was successful
+         */
+        function onChoose(choiceIndex, questionIndex = state.currentIndex) {
+            try {
+                // Validate inputs
+                if (typeof choiceIndex !== 'number' || choiceIndex < 0 || choiceIndex > 2) {
+                    throw new Error('Choice index must be a number between 0 and 2');
+                }
+                
+                if (typeof questionIndex !== 'number' || questionIndex < 0) {
+                    throw new Error('Question index must be a non-negative number');
+                }
+                
+                if (!quizData || !quizData.questions || questionIndex >= quizData.questions.length) {
+                    throw new Error('Invalid question index or no quiz data available');
+                }
+                
+                // Record the selection in state
+                const selectionRecorded = recordSelection(questionIndex, choiceIndex);
+                
+                if (!selectionRecorded) {
+                    throw new Error('Failed to record selection in state');
+                }
+                
+                // Update visual feedback for all choices
+                updateChoiceVisualFeedback(choiceIndex, questionIndex);
+                
+                // Update navigation buttons to enable next/finish
+                updateNavigationButtons(questionIndex);
+                
+                // Provide audio feedback for accessibility
+                const question = quizData.questions[questionIndex];
+                const selectedChoice = question.choices[choiceIndex];
+                const feedbackMessage = `Seleccionaste: ${selectedChoice.caption || `Opción ${choiceIndex + 1}`}`;
+                
+                // Announce selection to screen readers
+                announceToScreenReader(feedbackMessage);
+                
+                // Log selection for debugging
+                console.log(`Choice selected: Question ${questionIndex + 1}, Choice ${choiceIndex + 1} (${selectedChoice.caption})`);
+                
+                // Trigger selection animation
+                triggerSelectionAnimation(choiceIndex);
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Failed to handle choice selection:', error);
+                
+                // Show user-friendly error message
+                announceToScreenReader('Error al seleccionar la respuesta. Por favor, inténtalo de nuevo.');
+                
+                return false;
+            }
+        }
+
+        /**
+         * Updates visual feedback for all choice buttons based on current selection
+         * @param {number} selectedIndex - Index of the currently selected choice
+         * @param {number} questionIndex - Index of the current question
+         */
+        function updateChoiceVisualFeedback(selectedIndex, questionIndex) {
+            try {
+                // Update all choice buttons (0, 1, 2)
+                for (let i = 0; i < 3; i++) {
+                    const choiceButton = document.getElementById(`choice-${i}`);
+                    
+                    if (!choiceButton) {
+                        console.warn(`Choice button ${i} not found`);
+                        continue;
+                    }
+                    
+                    // Remove or add selected class based on current selection
+                    if (i === selectedIndex) {
+                        choiceButton.classList.add('selected');
+                        choiceButton.setAttribute('aria-pressed', 'true');
+                        
+                        // Update aria-label to indicate selection
+                        const currentLabel = choiceButton.getAttribute('aria-label') || '';
+                        const baseLabel = currentLabel.replace(' (seleccionada)', '');
+                        choiceButton.setAttribute('aria-label', baseLabel + ' (seleccionada)');
+                        
+                    } else {
+                        choiceButton.classList.remove('selected');
+                        choiceButton.setAttribute('aria-pressed', 'false');
+                        
+                        // Remove selection indicator from aria-label
+                        const currentLabel = choiceButton.getAttribute('aria-label') || '';
+                        const baseLabel = currentLabel.replace(' (seleccionada)', '');
+                        choiceButton.setAttribute('aria-label', baseLabel);
+                    }
+                }
+                
+                console.log(`Visual feedback updated for selection: ${selectedIndex}`);
+                
+            } catch (error) {
+                console.error('Failed to update choice visual feedback:', error);
+            }
+        }
+
+        /**
+         * Triggers selection animation for visual feedback
+         * @param {number} choiceIndex - Index of the selected choice
+         */
+        function triggerSelectionAnimation(choiceIndex) {
+            try {
+                const choiceButton = document.getElementById(`choice-${choiceIndex}`);
+                
+                if (!choiceButton) {
+                    console.warn(`Choice button ${choiceIndex} not found for animation`);
+                    return;
+                }
+                
+                // Remove existing animation classes
+                choiceButton.classList.remove('animate-selection');
+                
+                // Force reflow to restart animation
+                choiceButton.offsetHeight;
+                
+                // Add animation class
+                choiceButton.classList.add('animate-selection');
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    choiceButton.classList.remove('animate-selection');
+                }, 400); // Match animation duration
+                
+                console.log(`Selection animation triggered for choice ${choiceIndex}`);
+                
+            } catch (error) {
+                console.error('Failed to trigger selection animation:', error);
+            }
+        }
+
+        /**
+         * Sets up event listeners for all choice buttons
+         */
+        function setupChoiceEventListeners() {
+            try {
+                // Set up click event listeners for all choice buttons
+                for (let i = 0; i < 3; i++) {
+                    const choiceButton = document.getElementById(`choice-${i}`);
+                    
+                    if (!choiceButton) {
+                        console.warn(`Choice button ${i} not found during setup`);
+                        continue;
+                    }
+                    
+                    // Remove existing event listeners to prevent duplicates
+                    choiceButton.replaceWith(choiceButton.cloneNode(true));
+                    const newChoiceButton = document.getElementById(`choice-${i}`);
+                    
+                    // Add click event listener
+                    newChoiceButton.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        
+                        // Handle the choice selection
+                        const success = onChoose(i);
+                        
+                        if (success) {
+                            // Provide haptic feedback on supported devices
+                            if (navigator.vibrate) {
+                                navigator.vibrate(50); // Short vibration
+                            }
+                        }
+                    });
+                    
+                    // Add keyboard event listener for accessibility
+                    newChoiceButton.addEventListener('keydown', function(event) {
+                        // Handle Enter and Space key presses
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            
+                            // Trigger click behavior
+                            const success = onChoose(i);
+                            
+                            if (success && navigator.vibrate) {
+                                navigator.vibrate(50);
+                            }
+                        }
+                    });
+                    
+                    // Add focus event listener for better accessibility
+                    newChoiceButton.addEventListener('focus', function() {
+                        // Announce choice when focused via keyboard navigation
+                        const choiceCaption = document.getElementById(`choice-${i}-caption`);
+                        if (choiceCaption) {
+                            const message = `Opción ${i + 1}: ${choiceCaption.textContent}`;
+                            announceToScreenReader(message);
+                        }
+                    });
+                    
+                    console.log(`Event listeners set up for choice button ${i}`);
+                }
+                
+                console.log('All choice event listeners set up successfully');
+                
+            } catch (error) {
+                console.error('Failed to set up choice event listeners:', error);
+            }
+        }
+
+        /**
+         * Clears all choice selections visually (used when navigating between questions)
+         */
+        function clearChoiceSelections() {
+            try {
+                for (let i = 0; i < 3; i++) {
+                    const choiceButton = document.getElementById(`choice-${i}`);
+                    
+                    if (choiceButton) {
+                        choiceButton.classList.remove('selected');
+                        choiceButton.setAttribute('aria-pressed', 'false');
+                        
+                        // Clean up aria-label
+                        const currentLabel = choiceButton.getAttribute('aria-label') || '';
+                        const baseLabel = currentLabel.replace(' (seleccionada)', '');
+                        choiceButton.setAttribute('aria-label', baseLabel);
+                    }
+                }
+                
+                console.log('All choice selections cleared visually');
+                
+            } catch (error) {
+                console.error('Failed to clear choice selections:', error);
+            }
+        }
+
+        /**
+         * Highlights the selected choice for the current question (used when navigating back)
+         * @param {number} questionIndex - Index of the question to restore selection for
+         */
+        function restoreChoiceSelection(questionIndex) {
+            try {
+                const selectedChoice = getSelection(questionIndex);
+                
+                // Clear all selections first
+                clearChoiceSelections();
+                
+                // If there's a selection, restore it
+                if (selectedChoice !== null) {
+                    updateChoiceVisualFeedback(selectedChoice, questionIndex);
+                    console.log(`Restored selection for question ${questionIndex}: choice ${selectedChoice}`);
+                } else {
+                    console.log(`No previous selection to restore for question ${questionIndex}`);
+                }
+                
+            } catch (error) {
+                console.error('Failed to restore choice selection:', error);
+            }
+        }
+
+        /**
+         * Announces messages to screen readers for accessibility
+         * @param {string} message - Message to announce
+         */
+        function announceToScreenReader(message) {
+            try {
+                const srAnnouncements = document.getElementById('sr-announcements');
+                
+                if (srAnnouncements) {
+                    // Clear previous announcement
+                    srAnnouncements.textContent = '';
+                    
+                    // Add new announcement after a brief delay to ensure it's read
+                    setTimeout(() => {
+                        srAnnouncements.textContent = message;
+                    }, 100);
+                    
+                    console.log('Screen reader announcement:', message);
+                } else {
+                    console.warn('Screen reader announcement element not found');
+                }
+                
+            } catch (error) {
+                console.error('Failed to announce to screen reader:', error);
+            }
+        }
+
+        // ==========================================================================
+        // DATA LOADING AND GOOGLE APPS SCRIPT INTEGRATION
+        // ==========================================================================
+
+        /**
+         * Fetches quiz data from Google Apps Script service using JSONP
+         * @param {string} url - The Google Apps Script service URL
+         * @param {number} timeout - Timeout duration in milliseconds
+         * @returns {Promise} Promise that resolves with quiz data or rejects with error
+         */
+        function fetchGoogleService(url, timeout = CONFIG.TIMEOUT_DURATION) {
+            return new Promise((resolve, reject) => {
+                // Generate unique callback name to avoid conflicts
+                const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                
+                // Create script element for JSONP
+                const script = document.createElement('script');
+                let timeoutId;
+                let isResolved = false;
+                
+                // Set up timeout management
+                timeoutId = setTimeout(() => {
+                    if (!isResolved) {
+                        isResolved = true;
+                        cleanup();
+                        reject(new Error('Request timeout: Google service did not respond within ' + (timeout / 1000) + ' seconds'));
+                    }
+                }, timeout);
+                
+                // Define global callback function
+                window[callbackName] = function(data) {
+                    if (!isResolved) {
+                        isResolved = true;
+                        clearTimeout(timeoutId);
+                        cleanup();
+                        
+                        // Validate received data
+                        if (data && Array.isArray(data.questions) && data.questions.length > 0) {
+                            resolve(data);
+                        } else {
+                            reject(new Error('Invalid data format received from Google service'));
+                        }
+                    }
+                };
+                
+                // Error handling for script loading
+                script.onerror = function() {
+                    if (!isResolved) {
+                        isResolved = true;
+                        clearTimeout(timeoutId);
+                        cleanup();
+                        reject(new Error('Failed to load Google Apps Script service'));
+                    }
+                };
+                
+                // Cleanup function to remove script and callback
+                function cleanup() {
+                    try {
+                        if (script.parentNode) {
+                            script.parentNode.removeChild(script);
+                        }
+                        if (window[callbackName]) {
+                            delete window[callbackName];
+                        }
+                    } catch (e) {
+                        console.warn('Cleanup error:', e);
+                    }
+                }
+                
+                // Construct URL with callback parameter
+                const separator = url.includes('?') ? '&' : '?';
+                const requestUrl = url + separator + 'callback=' + callbackName;
+                
+                // Set script source and add to document
+                script.src = requestUrl;
+                script.async = true;
+                document.head.appendChild(script);
+                
+                console.log('JSONP request initiated:', requestUrl);
+            });
+        }
+
+        /**
+         * Converts Google Drive sharing URLs to direct download URLs
+         * @param {string} url - Google Drive sharing URL
+         * @returns {string} Direct download URL
+         */
+        function convertGoogleDriveUrl(url) {
+            if (!url || typeof url !== 'string') {
+                return url;
+            }
+            
+            // Pattern for Google Drive sharing URLs
+            const drivePattern = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+            const match = url.match(drivePattern);
+            
+            if (match && match[1]) {
+                // Convert to direct download URL
+                return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+            }
+            
+            return url;
+        }
+
+        /**
+         * Validates quiz data structure thoroughly
+         * @param {Object} rawData - Raw data to validate
+         * @param {string} source - Source of the data ('google' or 'local')
+         * @returns {boolean} True if data is valid
+         */
+        function validateQuizData(rawData, source = 'unknown') {
+            if (!rawData || typeof rawData !== 'object') {
+                throw new Error(`Invalid data: expected object, got ${typeof rawData}`);
+            }
+            
+            if (!Array.isArray(rawData.questions)) {
+                throw new Error('Invalid data structure: missing or invalid questions array');
+            }
+            
+            if (rawData.questions.length === 0) {
+                throw new Error('No questions found in the data');
+            }
+            
+            // Validate each question
+            rawData.questions.forEach((question, index) => {
+                if (!question || typeof question !== 'object') {
+                    throw new Error(`Question ${index + 1} is not a valid object`);
+                }
+                
+                // Validate prompt
+                if (!question.prompt || typeof question.prompt !== 'object') {
+                    throw new Error(`Question ${index + 1} has invalid prompt structure`);
+                }
+                
+                if (!question.prompt.caption || typeof question.prompt.caption !== 'string') {
+                    throw new Error(`Question ${index + 1} is missing a valid caption`);
+                }
+                
+                // Validate choices
+                if (!Array.isArray(question.choices)) {
+                    throw new Error(`Question ${index + 1} has invalid choices structure`);
+                }
+                
+                if (question.choices.length !== 3) {
+                    throw new Error(`Question ${index + 1} must have exactly 3 choices, found ${question.choices.length}`);
+                }
+                
+                // Validate each choice
+                const choiceIds = new Set();
+                question.choices.forEach((choice, choiceIndex) => {
+                    if (!choice || typeof choice !== 'object') {
+                        throw new Error(`Question ${index + 1}, choice ${choiceIndex + 1} is not a valid object`);
+                    }
+                    
+                    if (!choice.id || typeof choice.id !== 'string') {
+                        throw new Error(`Question ${index + 1}, choice ${choiceIndex + 1} is missing a valid ID`);
+                    }
+                    
+                    if (choiceIds.has(choice.id)) {
+                        throw new Error(`Question ${index + 1} has duplicate choice ID: ${choice.id}`);
+                    }
+                    choiceIds.add(choice.id);
+                    
+                    if (!choice.caption || typeof choice.caption !== 'string') {
+                        throw new Error(`Question ${index + 1}, choice ${choiceIndex + 1} is missing a valid caption`);
+                    }
+                });
+                
+                // Validate correct answer ID
+                if (!question.correctAnswerId || typeof question.correctAnswerId !== 'string') {
+                    throw new Error(`Question ${index + 1} is missing a valid correctAnswerId`);
+                }
+                
+                if (!choiceIds.has(question.correctAnswerId)) {
+                    throw new Error(`Question ${index + 1} has invalid correctAnswerId: ${question.correctAnswerId} not found in choices`);
+                }
+            });
+            
+            return true;
+        }
+
+        /**
+         * Processes and validates quiz data from Google service or local file
+         * @param {Object} rawData - Raw data from Google service or local file
+         * @param {string} source - Source of the data ('google' or 'local')
+         * @returns {Object} Processed and validated quiz data
+         */
+        function processGoogleServiceData(rawData, source = 'google') {
+            try {
+                // First validate the data structure
+                validateQuizData(rawData, source);
+                
+                const processedData = {
+                    questions: rawData.questions.map((question, index) => {
+                        // Process image URLs and ensure all fields are present
+                        const processedQuestion = {
+                            prompt: {
+                                imageBase64: question.prompt.imageBase64 || '',
+                                caption: question.prompt.caption || ''
+                            },
+                            choices: question.choices.map(choice => ({
+                                id: choice.id,
+                                imageBase64: choice.imageBase64 || '',
+                                caption: choice.caption || ''
+                            })),
+                            correctAnswerId: question.correctAnswerId
+                        };
+                        
+                        return processedQuestion;
+                    })
+                };
+                
+                console.log(`Successfully processed ${processedData.questions.length} questions from ${source} source`);
+                return processedData;
+                
+            } catch (error) {
+                console.error(`Error processing ${source} data:`, error);
+                throw error;
+            }
+        }
+
+        /**
+         * Main function to load quiz data from Google Apps Script
+         * @returns {Promise} Promise that resolves with processed quiz data
+         */
+        async function loadQuizDataFromGoogle() {
+            try {
+                console.log('Attempting to load quiz data from Google Apps Script...');
+                
+                // Fetch raw data from Google service
+                const rawData = await fetchGoogleService(CONFIG.GOOGLE_SERVICE_URL);
+                
+                // Process and validate the data
+                const processedData = processGoogleServiceData(rawData, 'google');
+                
+                console.log('Successfully loaded quiz data from Google service');
+                return processedData;
+                
+            } catch (error) {
+                console.error('Failed to load quiz data from Google service:', error);
+                throw error;
+            }
+        }
+
+        /**
+         * Loads quiz data from local JSON file as fallback
+         * @param {string} filePath - Path to local JSON file (default: 'quiz-data.json')
+         * @returns {Promise} Promise that resolves with quiz data
+         */
+        async function loadLocalData(filePath = 'quiz-data.json') {
+            try {
+                console.log('Attempting to load local quiz data from:', filePath);
+                
+                // Add timeout for local file loading to prevent hanging
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch(filePath, { 
+                    signal: controller.signal,
+                    cache: 'no-cache' // Ensure we get fresh data
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    // Provide more specific error messages based on status code
+                    let errorMessage = `Failed to load local file: ${response.status} ${response.statusText}`;
+                    if (response.status === 404) {
+                        errorMessage = `Local quiz data file not found: ${filePath}. Please ensure the file exists in the same directory as the application.`;
+                    } else if (response.status >= 500) {
+                        errorMessage = `Server error while loading local file: ${response.status}. Please check your web server configuration.`;
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                const rawData = await response.json();
+                
+                // Additional validation for local data
+                if (!rawData) {
+                    throw new Error('Local file is empty or contains invalid JSON');
+                }
+                
+                // Process and validate the local data using the same function
+                const processedData = processGoogleServiceData(rawData, 'local');
+                
+                console.log('Successfully loaded quiz data from local file');
+                return processedData;
+                
+            } catch (error) {
+                console.error('Failed to load local quiz data:', error);
+                
+                // Handle specific error types
+                if (error.name === 'AbortError') {
+                    throw new Error('Local data loading timed out. The file may be too large or the server is not responding.');
+                } else if (error instanceof SyntaxError) {
+                    throw new Error(`Local file contains invalid JSON format: ${error.message}`);
+                } else if (error.message.includes('Failed to fetch')) {
+                    throw new Error('Unable to access local file. Please check that the file exists and your web server is running.');
+                } else {
+                    throw new Error(`Local data loading failed: ${error.message}`);
+                }
+            }
+        }
+
+        /**
+         * Displays user-friendly error messages with retry options
+         * @param {Error} error - The error that occurred
+         * @param {string} source - Source of the error ('google' or 'local')
+         */
+        function showErrorMessage(error, source = 'unknown') {
+            const errorSection = document.getElementById('error-section');
+            const errorMessage = document.getElementById('error-message');
+            const retryButton = document.getElementById('error-retry-button');
+            const fallbackButton = document.getElementById('error-fallback-button');
+            
+            // Hide loading overlay and quiz sections
+            hideLoadingOverlay();
+            hideCountdownTimer();
+            document.querySelector('.quiz-container').classList.add('hidden');
+            
+            // Show error section
+            errorSection.classList.remove('hidden');
+            
+            // Set appropriate error message based on source and error type
+            let message = '';
+            let showFallback = true;
+            let troubleshootingTips = '';
+            
+            if (source === 'google') {
+                if (error.message.includes('timeout')) {
+                    message = 'El servicio de Google tardó demasiado en responder. Esto puede deberse a una conexión lenta o problemas temporales del servicio.';
+                    troubleshootingTips = ' Intenta verificar tu conexión a internet o espera unos minutos antes de reintentar.';
+                } else if (error.message.includes('Failed to load')) {
+                    message = 'No se pudo conectar con el servicio de Google Apps Script. Verifica tu conexión a internet.';
+                    troubleshootingTips = ' Asegúrate de estar conectado a internet y que no haya un firewall bloqueando la conexión.';
+                } else if (error.message.includes('Invalid data format')) {
+                    message = 'Los datos recibidos del servicio de Google tienen un formato incorrecto.';
+                    troubleshootingTips = ' Esto puede indicar un problema con la configuración del servicio de Google Apps Script.';
+                } else {
+                    message = 'Error al cargar datos desde Google Apps Script: ' + error.message;
+                }
+            } else if (source === 'local') {
+                if (error.message.includes('not found') || error.message.includes('404')) {
+                    message = 'No se encontró el archivo de datos locales. Asegúrate de que el archivo "quiz-data.json" esté en el mismo directorio que la aplicación.';
+                    showFallback = false;
+                } else if (error.message.includes('invalid JSON')) {
+                    message = 'El archivo de datos locales contiene errores de formato. Verifica que el archivo JSON sea válido.';
+                    showFallback = false;
+                } else if (error.message.includes('timed out')) {
+                    message = 'La carga del archivo local tardó demasiado. El archivo puede ser muy grande o el servidor no responde.';
+                    troubleshootingTips = ' Verifica que tu servidor web esté funcionando correctamente.';
+                } else {
+                    message = 'No se pudieron cargar los datos locales de respaldo: ' + error.message;
+                    showFallback = false;
+                }
+            } else {
+                message = 'Error desconocido: ' + error.message;
+            }
+            
+            // Combine message with troubleshooting tips
+            const fullMessage = message + troubleshootingTips;
+            errorMessage.textContent = fullMessage;
+            
+            // Configure retry button with enhanced functionality
+            retryButton.onclick = () => {
+                errorSection.classList.add('hidden');
+                // Add a small delay to prevent rapid retries
+                setTimeout(() => {
+                    loadQuizData(); // Retry the main loading process
+                }, 500);
+            };
+            
+            // Configure fallback button
+            if (showFallback && source === 'google') {
+                fallbackButton.classList.remove('hidden');
+                fallbackButton.textContent = 'Usar datos locales';
+                fallbackButton.onclick = () => {
+                    errorSection.classList.add('hidden');
+                    setTimeout(async () => {
+                        try {
+                            const data = await loadQuizDataWithFallback(true); // Force fallback to local data
+                            if (data) {
+                                // Shuffle all questions before storing in quizData
+                                const shuffledData = shuffleAllQuestions(data);
+                                quizData = shuffledData.questions;
+                                console.log(`Successfully loaded and shuffled ${quizData.length} questions from fallback`);
+                                
+                                // Initialize state with the loaded quiz data
+                                state = initializeState(quizData.length);
+                                console.log('Quiz state initialized successfully from fallback');
+                                
+                                announceToScreenReader(`Quiz cargado exitosamente con ${quizData.length} preguntas desde archivo local`);
+                                
+                                // Hide error section and show quiz
+                                errorSection.classList.add('hidden');
+                                document.querySelector('.quiz-container').classList.remove('hidden');
+                                
+                                // Start the quiz by rendering the first question
+                                if (typeof renderQuestion === 'function') {
+                                    renderQuestion();
+                                }
+                            }
+                        } catch (fallbackError) {
+                            console.error('Fallback loading failed:', fallbackError);
+                            showErrorMessage(fallbackError, 'local');
+                        }
+                    }, 500);
+                };
+            } else {
+                fallbackButton.classList.add('hidden');
+            }
+            
+            // Announce error to screen readers with more context
+            const screenReaderMessage = `Error al cargar el quiz. ${message}${troubleshootingTips}`;
+            announceToScreenReader(screenReaderMessage);
+            
+            // Log detailed error information for debugging
+            console.error('Error details:', {
+                source: source,
+                message: error.message,
+                stack: error.stack,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        /**
+         * Retry mechanism with exponential backoff and user feedback
+         * @param {Function} operation - The operation to retry
+         * @param {number} maxRetries - Maximum number of retry attempts
+         * @param {number} baseDelay - Base delay in milliseconds
+         * @param {string} operationName - Name of the operation for user feedback
+         * @returns {Promise} Promise that resolves with operation result
+         */
+        async function retryWithBackoff(operation, maxRetries = 3, baseDelay = 1000, operationName = 'operación') {
+            let lastError;
+            
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    if (attempt > 0) {
+                        // Update loading message for retry attempts
+                        updateLoadingMessage(`Reintentando ${operationName} (intento ${attempt + 1}/${maxRetries + 1})...`);
+                    }
+                    
+                    return await operation();
+                } catch (error) {
+                    lastError = error;
+                    
+                    if (attempt === maxRetries) {
+                        console.error(`All retry attempts failed for ${operationName}:`, lastError);
+                        throw lastError;
+                    }
+                    
+                    // Calculate delay with exponential backoff (with jitter to prevent thundering herd)
+                    const jitter = Math.random() * 0.3; // Add up to 30% jitter
+                    const delay = Math.floor(baseDelay * Math.pow(2, attempt) * (1 + jitter));
+                    
+                    console.log(`Retry attempt ${attempt + 1}/${maxRetries + 1} failed for ${operationName}, retrying in ${delay}ms...`);
+                    console.log('Error:', error.message);
+                    
+                    // Announce retry to screen readers
+                    if (attempt === 0) {
+                        announceToScreenReader(`Primer intento falló, reintentando automáticamente...`);
+                    }
+                    
+                    // Update loading message during wait
+                    updateLoadingMessage(`Esperando ${Math.ceil(delay / 1000)} segundos antes del siguiente intento...`);
+                    
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        /**
+         * Main data loading function with fallback support
+         * @param {boolean} forceFallback - Force use of local fallback data
+         * @returns {Promise} Promise that resolves with quiz data
+         */
+        async function loadQuizDataWithFallback(forceFallback = false) {
+            try {
+                if (!forceFallback) {
+                    // Show countdown timer for Google service loading
+                    showCountdownTimer(CONFIG.TIMEOUT_DURATION, 'Conectando con Google Apps Script...');
+                    
+                    try {
+                        // First, try to load from Google Apps Script with retry mechanism
+                        const data = await retryWithBackoff(
+                            loadQuizDataFromGoogle, 
+                            2, 
+                            2000, 
+                            'conexión con Google Apps Script'
+                        );
+                        hideCountdownTimer();
+                        return data;
+                    } catch (googleError) {
+                        console.warn('Google service failed after retries, attempting fallback to local data');
+                        hideCountdownTimer();
+                        showErrorMessage(googleError, 'google');
+                        return; // Let user decide whether to use fallback
+                    }
+                } else {
+                    // Force fallback to local data
+                    console.log('Using local fallback data as requested');
+                    showLoadingOverlay('Cargando datos locales...');
+                    
+                    try {
+                        const data = await loadLocalData();
+                        hideLoadingOverlay();
+                        return data;
+                    } catch (localError) {
+                        hideLoadingOverlay();
+                        throw localError;
+                    }
+                }
+            } catch (error) {
+                console.error('All data loading methods failed:', error);
+                hideCountdownTimer();
+                hideLoadingOverlay();
+                showErrorMessage(error, 'local');
+                throw error;
+            }
+        }
+
+        /**
+         * Main entry point for loading quiz data
+         * @returns {Promise} Promise that resolves with quiz data
+         */
+        async function loadQuizData() {
+            try {
+                const data = await loadQuizDataWithFallback(false);
+                if (data) {
+                    // Shuffle all questions before storing in quizData
+                    const shuffledData = shuffleAllQuestions(data);
+                    quizData = shuffledData.questions;
+                    console.log(`Successfully loaded and shuffled ${quizData.length} questions`);
+                    
+                    // Try to restore persisted state first
+                    const stateRestored = restorePersistedState();
+                    
+                    if (!stateRestored || state.selections.length !== quizData.length) {
+                        // Initialize fresh state if restoration failed or data length mismatch
+                        state = initializeState(quizData.length);
+                        console.log('Quiz state initialized successfully');
+                    } else {
+                        console.log('Quiz state restored from previous session');
+                    }
+                    
+                    announceToScreenReader(`Quiz cargado exitosamente con ${quizData.length} preguntas`);
+                    return shuffledData;
+                }
+            } catch (error) {
+                console.error('Failed to load quiz data:', error);
+                throw error;
+            }
+        }
+
+
+
+        // ==========================================================================
+        // LOADING UI AND COUNTDOWN TIMER
+        // ==========================================================================
+
+        let countdownInterval = null;
+        let countdownStartTime = null;
+
+        /**
+         * Shows the loading overlay with countdown timer
+         * @param {number} duration - Duration in milliseconds for the countdown
+         * @param {string} message - Loading message to display
+         */
+        function showCountdownTimer(duration = CONFIG.TIMEOUT_DURATION, message = 'Cargando quiz...') {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const countdownText = document.getElementById('countdown-text');
+            const countdownValue = document.getElementById('countdown-value');
+            const retryButton = document.getElementById('retry-button');
+            const fallbackButton = document.getElementById('fallback-button');
+            
+            // Show loading overlay
+            loadingOverlay.classList.remove('hidden');
+            loadingOverlay.setAttribute('aria-busy', 'true');
+            
+            // Update loading message
+            const loadingTitle = loadingOverlay.querySelector('h2');
+            if (loadingTitle) {
+                loadingTitle.textContent = message;
+            }
+            
+            // Hide retry and fallback buttons initially
+            retryButton.classList.add('hidden');
+            fallbackButton.classList.add('hidden');
+            
+            // Set initial countdown values
+            const totalSeconds = Math.ceil(duration / 1000);
+            countdownValue.textContent = totalSeconds;
+            countdownStartTime = Date.now();
+            
+            // Clear any existing countdown
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            // Start countdown timer
+            countdownInterval = setInterval(() => {
+                const elapsed = Date.now() - countdownStartTime;
+                const remaining = Math.max(0, Math.ceil((duration - elapsed) / 1000));
+                
+                countdownValue.textContent = remaining;
+                
+                // Update progress bar fill based on elapsed time
+                const progressFill = loadingOverlay.querySelector('.loading-spinner');
+                if (progressFill) {
+                    const progress = Math.min(100, (elapsed / duration) * 100);
+                    // Add visual feedback by changing spinner color as time progresses
+                    if (progress > 75) {
+                        progressFill.style.borderTopColor = 'var(--color-warning)';
+                    } else if (progress > 90) {
+                        progressFill.style.borderTopColor = 'var(--color-error)';
+                    }
+                }
+                
+                // Show retry and fallback options when countdown reaches 30 seconds or less
+                if (remaining <= 30 && remaining > 0) {
+                    retryButton.classList.remove('hidden');
+                    fallbackButton.classList.remove('hidden');
+                }
+                
+                // Announce countdown milestones to screen readers
+                if (remaining === 30 || remaining === 10 || remaining === 5) {
+                    announceToScreenReader(`${remaining} segundos restantes`);
+                }
+                
+                // Stop countdown when it reaches 0
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    
+                    // Show final retry options
+                    retryButton.classList.remove('hidden');
+                    fallbackButton.classList.remove('hidden');
+                    
+                    // Update message
+                    if (loadingTitle) {
+                        loadingTitle.textContent = 'Tiempo de espera agotado';
+                    }
+                    countdownText.textContent = 'El servicio no respondió. ';
+                    
+                    announceToScreenReader('Tiempo de espera agotado. Puedes reintentar o usar datos locales.');
+                }
+            }, 1000);
+            
+            // Set up retry button functionality
+            retryButton.onclick = () => {
+                hideCountdownTimer();
+                loadQuizData(); // Retry the main loading process
+            };
+            
+            // Set up fallback button functionality
+            fallbackButton.onclick = () => {
+                hideCountdownTimer();
+                loadQuizDataWithFallback(true); // Force fallback to local data
+            };
+            
+            console.log(`Countdown timer started for ${totalSeconds} seconds`);
+            announceToScreenReader(`Cargando quiz. Tiempo estimado: ${totalSeconds} segundos`);
+        }
+
+        /**
+         * Hides the loading overlay and cleans up countdown timer
+         */
+        function hideCountdownTimer() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            // Hide loading overlay
+            loadingOverlay.classList.add('hidden');
+            loadingOverlay.setAttribute('aria-busy', 'false');
+            
+            // Clear countdown interval
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            
+            // Reset countdown display
+            const countdownValue = document.getElementById('countdown-value');
+            const countdownText = document.getElementById('countdown-text');
+            const retryButton = document.getElementById('retry-button');
+            const fallbackButton = document.getElementById('fallback-button');
+            
+            if (countdownValue) {
+                countdownValue.textContent = '90';
+            }
+            if (countdownText) {
+                countdownText.textContent = 'Tiempo restante: ';
+            }
+            
+            // Hide buttons
+            retryButton.classList.add('hidden');
+            fallbackButton.classList.add('hidden');
+            
+            // Reset spinner color
+            const progressFill = loadingOverlay.querySelector('.loading-spinner');
+            if (progressFill) {
+                progressFill.style.borderTopColor = 'var(--color-primary)';
+            }
+            
+            console.log('Countdown timer hidden and cleaned up');
+        }
+
+        /**
+         * Updates the loading message during the countdown
+         * @param {string} message - New message to display
+         */
+        function updateLoadingMessage(message) {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingTitle = loadingOverlay.querySelector('h2');
+            
+            if (loadingTitle && !loadingOverlay.classList.contains('hidden')) {
+                loadingTitle.textContent = message;
+                announceToScreenReader(message);
+            }
+        }
+
+        /**
+         * Shows loading progress with animated spinner
+         * @param {string} message - Loading message
+         */
+        function showLoadingOverlay(message = 'Cargando...') {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingTitle = loadingOverlay.querySelector('h2');
+            
+            if (loadingTitle) {
+                loadingTitle.textContent = message;
+            }
+            
+            loadingOverlay.classList.remove('hidden');
+            loadingOverlay.setAttribute('aria-busy', 'true');
+            
+            announceToScreenReader(message);
+        }
+
+        /**
+         * Hides the loading overlay without countdown functionality
+         */
+        function hideLoadingOverlay() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.classList.add('hidden');
+            loadingOverlay.setAttribute('aria-busy', 'false');
+        }
+
+        /**
+         * Test function to verify fallback data loading system
+         * This function can be called from browser console for testing
+         */
+        async function testFallbackSystem() {
+            console.log('🧪 Testing fallback data loading system...');
+            
+            try {
+                // Test 1: Test local data loading directly
+                console.log('Test 1: Loading local data directly...');
+                const localData = await loadLocalData();
+                console.log('✅ Local data loading successful:', localData);
+                
+                // Test 2: Test with invalid file path
+                console.log('Test 2: Testing with invalid file path...');
+                try {
+                    await loadLocalData('nonexistent-file.json');
+                    console.log('❌ Should have failed with invalid file');
+                } catch (error) {
+                    console.log('✅ Correctly handled invalid file:', error.message);
+                }
+                
+                // Test 3: Test retry mechanism
+                console.log('Test 3: Testing retry mechanism...');
+                let attemptCount = 0;
+                const testOperation = () => {
+                    attemptCount++;
+                    if (attemptCount < 3) {
+                        throw new Error(`Test error attempt ${attemptCount}`);
+                    }
+                    return Promise.resolve('Success after retries');
+                };
+                
+                const retryResult = await retryWithBackoff(testOperation, 3, 100, 'test operation');
+                console.log('✅ Retry mechanism working:', retryResult);
+                
+                console.log('🎉 All fallback system tests passed!');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Fallback system test failed:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Test function to verify answer selection functionality
+         * This function loads test data and verifies that choice selection works
+         */
+        function testAnswerSelection() {
+            console.log('🧪 Testing answer selection functionality...');
+            
+            // Load test data from local file
+            loadLocalData()
+                .then(data => {
+                    console.log('✅ Test data loaded successfully');
+                    
+                    // Set quiz data and initialize state
+                    quizData = data;
+                    resetState(data.questions.length);
+                    
+                    // Render first question
+                    const success = renderQuestion(0);
+                    if (success) {
+                        console.log('✅ First question rendered successfully');
+                        
+                        // Test selecting choice 0
+                        console.log('🔄 Testing choice selection...');
+                        const selectionSuccess = onChoose(0, 0);
+                        
+                        if (selectionSuccess) {
+                            console.log('✅ Choice selection successful');
+                            
+                            // Verify selection was recorded
+                            const recordedSelection = getSelection(0);
+                            if (recordedSelection === 0) {
+                                console.log('✅ Selection properly recorded in state');
+                                
+                                // Verify visual feedback
+                                const choiceButton = document.getElementById('choice-0');
+                                if (choiceButton && choiceButton.classList.contains('selected')) {
+                                    console.log('✅ Visual feedback applied correctly');
+                                    console.log('🎉 Answer selection functionality test PASSED!');
+                                } else {
+                                    console.error('❌ Visual feedback not applied correctly');
+                                }
+                            } else {
+                                console.error('❌ Selection not recorded correctly in state');
+                            }
+                        } else {
+                            console.error('❌ Choice selection failed');
+                        }
+                    } else {
+                        console.error('❌ Failed to render first question');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Test failed:', error);
+                });
+        }
+
+        /**
+         * Placeholder function for calculating quiz score
+         * This will be implemented in task 7.1
+         * @returns {number} Current calculated score
+         */
+        function calculateScore() {
+            // Placeholder implementation - will be completed in task 7.1
+            console.log('calculateScore() - placeholder implementation');
+            return 0;
+        }
+
+        /**
+         * Placeholder function for showing quiz results
+         * This will be implemented in task 7.1
+         */
+        function showResults() {
+            // Placeholder implementation - will be completed in task 7.1
+            console.log('showResults() - placeholder implementation');
+            announceToScreenReader('Resultados del quiz - función pendiente de implementar');
+        }
+
+        /**
+         * Sets up global keyboard event listeners for accessibility
+         */
+        function setupKeyboardEventListeners() {
+            try {
+                // Add global keyboard event listener
+                document.addEventListener('keydown', function(event) {
+                    // Prevent keyboard shortcuts when user is typing in input fields
+                    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                        return;
+                    }
+                    
+                    // Handle number keys for answer selection (1, 2, 3)
+                    if (event.key >= '1' && event.key <= '3') {
+                        event.preventDefault();
+                        
+                        const choiceIndex = parseInt(event.key) - 1; // Convert to 0-based index
+                        const success = onChoose(choiceIndex);
+                        
+                        if (success) {
+                            // Provide keyboard navigation feedback
+                            announceToScreenReader(`Seleccionaste la opción ${event.key} usando el teclado`);
+                            
+                            // Focus the selected choice button for visual feedback
+                            const choiceButton = document.getElementById(`choice-${choiceIndex}`);
+                            if (choiceButton) {
+                                choiceButton.focus();
+                            }
+                            
+                            // Haptic feedback if available
+                            if (navigator.vibrate) {
+                                navigator.vibrate(50);
+                            }
+                        }
+                        
+                        console.log(`Keyboard selection: choice ${event.key}`);
+                    }
+                    
+                    // Handle Enter key for next question/finish
+                    else if (event.key === 'Enter') {
+                        event.preventDefault();
+                        
+                        const nextButton = document.getElementById('next-button');
+                        if (nextButton && !nextButton.disabled) {
+                            const success = nextQuestion();
+                            
+                            if (success) {
+                                announceToScreenReader('Navegaste a la siguiente pregunta usando Enter');
+                                
+                                if (navigator.vibrate) {
+                                    navigator.vibrate(50);
+                                }
+                            }
+                        } else {
+                            announceToScreenReader('Selecciona una respuesta antes de continuar');
+                        }
+                        
+                        console.log('Keyboard navigation: Enter pressed');
+                    }
+                    
+                    // Handle arrow keys for navigation
+                    else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        
+                        const nextButton = document.getElementById('next-button');
+                        if (nextButton && !nextButton.disabled) {
+                            const success = nextQuestion();
+                            
+                            if (success) {
+                                announceToScreenReader('Navegaste a la siguiente pregunta usando las flechas');
+                                
+                                if (navigator.vibrate) {
+                                    navigator.vibrate(50);
+                                }
+                            }
+                        } else {
+                            announceToScreenReader('Selecciona una respuesta antes de continuar');
+                        }
+                        
+                        console.log('Keyboard navigation: Right/Down arrow pressed');
+                    }
+                    
+                    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        
+                        const prevButton = document.getElementById('prev-button');
+                        if (prevButton && !prevButton.disabled) {
+                            const success = prevQuestion();
+                            
+                            if (success) {
+                                announceToScreenReader('Navegaste a la pregunta anterior usando las flechas');
+                                
+                                if (navigator.vibrate) {
+                                    navigator.vibrate(50);
+                                }
+                            }
+                        } else {
+                            announceToScreenReader('Ya estás en la primera pregunta');
+                        }
+                        
+                        console.log('Keyboard navigation: Left/Up arrow pressed');
+                    }
+                    
+                    // Handle Escape key to clear selection (accessibility feature)
+                    else if (event.key === 'Escape') {
+                        event.preventDefault();
+                        
+                        // Clear current selection
+                        clearChoiceSelections();
+                        
+                        // Update state to remove selection
+                        updateStateWithPersistence(() => {
+                            state.selections[state.currentIndex] = null;
+                            
+                            // Update navigation buttons
+                            updateNavigationButtons(state.currentIndex);
+                            
+                            announceToScreenReader('Selección eliminada. Usa las teclas 1, 2 o 3 para seleccionar una respuesta');
+                            
+                            console.log('Keyboard action: Selection cleared with Escape');
+                        }, 'clear selection');
+                    }
+                });
+                
+                console.log('Global keyboard event listeners set up successfully');
+                
+            } catch (error) {
+                console.error('Failed to set up keyboard event listeners:', error);
+            }
+        }
+
+        /**
+         * Enhances focus management for better keyboard navigation
+         */
+        function enhanceFocusManagement() {
+            try {
+                // Add focus indicators to all interactive elements
+                const interactiveElements = document.querySelectorAll('button, [tabindex]');
+                
+                interactiveElements.forEach(element => {
+                    // Add focus event listener
+                    element.addEventListener('focus', function() {
+                        // Add visual focus indicator
+                        this.classList.add('keyboard-focused');
+                        
+                        // Announce focused element to screen readers
+                        const ariaLabel = this.getAttribute('aria-label') || this.textContent || 'Interactive element';
+                        console.log(`Keyboard focus: ${ariaLabel}`);
+                    });
+                    
+                    // Add blur event listener
+                    element.addEventListener('blur', function() {
+                        // Remove visual focus indicator
+                        this.classList.remove('keyboard-focused');
+                    });
+                });
+                
+                // Set up tab order for logical navigation
+                const choiceButtons = document.querySelectorAll('[id^="choice-"]');
+                const navButtons = document.querySelectorAll('#prev-button, #next-button');
+                
+                // Set tabindex for choice buttons
+                choiceButtons.forEach((button, index) => {
+                    button.setAttribute('tabindex', (index + 1).toString());
+                });
+                
+                // Set tabindex for navigation buttons
+                navButtons.forEach((button, index) => {
+                    button.setAttribute('tabindex', (choiceButtons.length + index + 1).toString());
+                });
+                
+                console.log('Focus management enhanced successfully');
+                
+            } catch (error) {
+                console.error('Failed to enhance focus management:', error);
+            }
+        }
+
+        /**
+         * Adds ARIA attributes for better screen reader support
+         */
+        function enhanceAriaAttributes() {
+            try {
+                // Enhance quiz container with ARIA attributes
+                const quizContainer = document.querySelector('.quiz-container');
+                if (quizContainer) {
+                    quizContainer.setAttribute('role', 'main');
+                    quizContainer.setAttribute('aria-label', 'Quiz interactivo');
+                }
+                
+                // Enhance progress section
+                const progressSection = document.querySelector('.progress-section');
+                if (progressSection) {
+                    progressSection.setAttribute('role', 'status');
+                    progressSection.setAttribute('aria-live', 'polite');
+                    progressSection.setAttribute('aria-label', 'Progreso del quiz');
+                }
+                
+                // Enhance question section
+                const questionSection = document.querySelector('.question-section');
+                if (questionSection) {
+                    questionSection.setAttribute('role', 'group');
+                    questionSection.setAttribute('aria-labelledby', 'current-question');
+                }
+                
+                // Enhance choices section
+                const choicesSection = document.querySelector('.choices-section');
+                if (choicesSection) {
+                    choicesSection.setAttribute('role', 'radiogroup');
+                    choicesSection.setAttribute('aria-label', 'Opciones de respuesta');
+                    choicesSection.setAttribute('aria-required', 'true');
+                }
+                
+                // Enhance choice buttons with radio button semantics
+                const choiceButtons = document.querySelectorAll('[id^="choice-"]');
+                choiceButtons.forEach((button, index) => {
+                    button.setAttribute('role', 'radio');
+                    button.setAttribute('aria-checked', 'false');
+                    button.setAttribute('aria-posinset', (index + 1).toString());
+                    button.setAttribute('aria-setsize', '3');
+                });
+                
+                // Enhance navigation section
+                const navigationSection = document.querySelector('.navigation-section');
+                if (navigationSection) {
+                    navigationSection.setAttribute('role', 'navigation');
+                    navigationSection.setAttribute('aria-label', 'Navegación del quiz');
+                }
+                
+                // Add keyboard shortcuts information
+                const keyboardHint = document.querySelector('.keyboard-hint');
+                if (keyboardHint) {
+                    keyboardHint.setAttribute('role', 'note');
+                    keyboardHint.setAttribute('aria-label', 'Atajos de teclado disponibles');
+                }
+                
+                console.log('ARIA attributes enhanced successfully');
+                
+            } catch (error) {
+                console.error('Failed to enhance ARIA attributes:', error);
+            }
+        }
+
+        /**
+         * Provides keyboard navigation feedback through visual and audio cues
+         */
+        function provideKeyboardFeedback() {
+            try {
+                // Create a visual indicator for keyboard mode
+                const keyboardIndicator = document.createElement('div');
+                keyboardIndicator.id = 'keyboard-mode-indicator';
+                keyboardIndicator.className = 'sr-only';
+                keyboardIndicator.setAttribute('aria-live', 'polite');
+                keyboardIndicator.setAttribute('aria-atomic', 'true');
+                document.body.appendChild(keyboardIndicator);
+                
+                // Track keyboard usage
+                let keyboardModeActive = false;
+                
+                // Detect keyboard usage
+                document.addEventListener('keydown', function(event) {
+                    if (!keyboardModeActive && (event.key === 'Tab' || event.key.startsWith('Arrow'))) {
+                        keyboardModeActive = true;
+                        document.body.classList.add('keyboard-navigation-active');
+                        
+                        // Announce keyboard mode activation
+                        keyboardIndicator.textContent = 'Modo de navegación por teclado activado. Usa Tab para navegar, flechas para moverte, y números 1-3 para seleccionar respuestas.';
+                        
+                        console.log('Keyboard navigation mode activated');
+                    }
+                });
+                
+                // Detect mouse usage to disable keyboard mode
+                document.addEventListener('mousedown', function() {
+                    if (keyboardModeActive) {
+                        keyboardModeActive = false;
+                        document.body.classList.remove('keyboard-navigation-active');
+                        keyboardIndicator.textContent = '';
+                        
+                        console.log('Keyboard navigation mode deactivated');
+                    }
+                });
+                
+                console.log('Keyboard feedback system initialized');
+                
+            } catch (error) {
+                console.error('Failed to set up keyboard feedback:', error);
+            }
+        }
+
+        /**
+         * Sets up event listeners for navigation buttons
+         */
+        function setupNavigationEventListeners() {
+            try {
+                const prevButton = document.getElementById('prev-button');
+                const nextButton = document.getElementById('next-button');
+                
+                if (!prevButton || !nextButton) {
+                    console.warn('Navigation buttons not found during setup');
+                    return;
+                }
+                
+                // Remove existing event listeners to prevent duplicates
+                prevButton.replaceWith(prevButton.cloneNode(true));
+                nextButton.replaceWith(nextButton.cloneNode(true));
+                
+                // Get fresh references after cloning
+                const newPrevButton = document.getElementById('prev-button');
+                const newNextButton = document.getElementById('next-button');
+                
+                // Add click event listener for previous button
+                newPrevButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    
+                    if (!newPrevButton.disabled) {
+                        const success = prevQuestion();
+                        
+                        if (success && navigator.vibrate) {
+                            navigator.vibrate(50); // Haptic feedback
+                        }
+                    }
+                });
+                
+                // Add click event listener for next button
+                newNextButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    
+                    if (!newNextButton.disabled) {
+                        const success = nextQuestion();
+                        
+                        if (success && navigator.vibrate) {
+                            navigator.vibrate(50); // Haptic feedback
+                        }
+                    }
+                });
+                
+                // Add keyboard event listeners for accessibility
+                newPrevButton.addEventListener('keydown', function(event) {
+                    if ((event.key === 'Enter' || event.key === ' ') && !newPrevButton.disabled) {
+                        event.preventDefault();
+                        const success = prevQuestion();
+                        
+                        if (success && navigator.vibrate) {
+                            navigator.vibrate(50);
+                        }
+                    }
+                });
+                
+                newNextButton.addEventListener('keydown', function(event) {
+                    if ((event.key === 'Enter' || event.key === ' ') && !newNextButton.disabled) {
+                        event.preventDefault();
+                        const success = nextQuestion();
+                        
+                        if (success && navigator.vibrate) {
+                            navigator.vibrate(50);
+                        }
+                    }
+                });
+                
+                console.log('Navigation event listeners set up successfully');
+                
+            } catch (error) {
+                console.error('Failed to set up navigation event listeners:', error);
+            }
+        }
+
+        // ==========================================================================
+        // QUESTION RENDERING AND SHUFFLING LOGIC
+        // ==========================================================================
+
+        /**
+         * Shuffles an array using the Fisher-Yates algorithm
+         * @param {Array} array - The array to shuffle
+         * @returns {Array} - A new shuffled array
+         */
+        function shuffleArray(array) {
+            try {
+                // Create a copy to avoid mutating the original array
+                const shuffled = [...array];
+                
+                // Fisher-Yates shuffle algorithm
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                
+                console.log('Array shuffled successfully:', shuffled.length, 'items');
+                return shuffled;
+                
+            } catch (error) {
+                console.error('Error shuffling array:', error);
+                return [...array]; // Return copy of original array on error
+            }
+        }
+
+        /**
+         * Renders the current question with shuffled choices
+         * @param {number} questionIndex - Index of the question to render
+         */
+        function renderQuestion(questionIndex) {
+            try {
+                if (!quizData || !Array.isArray(quizData) || questionIndex < 0 || questionIndex >= quizData.length) {
+                    console.error('Invalid question index or quiz data not available');
+                    return false;
+                }
+
+                const question = quizData[questionIndex];
+                
+                // Validate question structure
+                if (!question || !question.prompt || !Array.isArray(question.choices) || !question.correctAnswerId) {
+                    console.error('Invalid question structure at index:', questionIndex);
+                    return false;
+                }
+
+                console.log('Rendering question', questionIndex + 1, 'of', quizData.length);
+
+                // Shuffle choices if not already shuffled for this question
+                if (!question.shuffledData) {
+                    const shuffledChoices = shuffleArray(question.choices);
+                    
+                    // Find the correct answer index in the shuffled array
+                    const correctIndex = shuffledChoices.findIndex(choice => choice.id === question.correctAnswerId);
+                    
+                    // Store shuffled data for consistent rendering
+                    question.shuffledData = {
+                        choices: shuffledChoices,
+                        correctIndex: correctIndex
+                    };
+                    
+                    console.log('Choices shuffled for question', questionIndex + 1, 'correct answer at index:', correctIndex);
+                }
+
+                // Render question prompt
+                renderQuestionPrompt(question.prompt);
+                
+                // Render shuffled choices
+                renderChoices(question.shuffledData.choices, questionIndex);
+                
+                // Update progress bar
+                updateProgressBar(questionIndex);
+                
+                // Update navigation buttons
+                updateNavigationButtons(questionIndex);
+                
+                // Update ARIA attributes for accessibility
+                updateARIAAttributes(questionIndex);
+                
+                // Manage focus for keyboard navigation
+                manageFocus(questionIndex);
+
+                // Add animation class for smooth transition
+                const quizContainer = document.querySelector('.quiz-container');
+                if (quizContainer) {
+                    quizContainer.classList.remove('animate-fade-in');
+                    // Force reflow
+                    quizContainer.offsetHeight;
+                    quizContainer.classList.add('animate-fade-in');
+                }
+
+                console.log('Question rendered successfully');
+                return true;
+                
+            } catch (error) {
+                console.error('Error rendering question:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Renders the question prompt (image and caption)
+         * @param {Object} prompt - The prompt object with imageBase64 and caption
+         */
+        function renderQuestionPrompt(prompt) {
+            try {
+                const questionSection = document.querySelector('.question-section');
+                if (!questionSection) {
+                    console.error('Question section not found');
+                    return;
+                }
+
+                // Create or update question prompt container
+                let promptContainer = questionSection.querySelector('.question-prompt');
+                if (!promptContainer) {
+                    promptContainer = document.createElement('div');
+                    promptContainer.className = 'question-prompt';
+                    questionSection.appendChild(promptContainer);
+                }
+
+                // Clear existing content
+                promptContainer.innerHTML = '';
+
+                // Create image button if image exists
+                if (prompt.imageBase64) {
+                    const imageButton = document.createElement('button');
+                    imageButton.className = 'image-button';
+                    imageButton.setAttribute('aria-label', `Pregunta: ${prompt.caption || 'Imagen de la pregunta'}`);
+                    
+                    const img = document.createElement('img');
+                    img.src = prompt.imageBase64;
+                    img.alt = prompt.caption || 'Imagen de la pregunta';
+                    img.className = 'prompt-image';
+                    
+                    // Add error handling for image loading
+                    img.onerror = function() {
+                        console.warn('Failed to load prompt image');
+                        img.style.display = 'none';
+                        
+                        // Show caption as fallback
+                        const fallbackText = document.createElement('p');
+                        fallbackText.textContent = prompt.caption || 'Imagen no disponible';
+                        fallbackText.className = 'prompt-fallback';
+                        imageButton.appendChild(fallbackText);
+                    };
+                    
+                    // Add click handler for speech synthesis (will be implemented in task 6.2)
+                    imageButton.addEventListener('click', function() {
+                        console.log('Prompt image clicked - speech synthesis will be implemented in task 6.2');
+                        // TODO: Implement speech synthesis in task 6.2
+                        // speakNow(prompt.caption || 'Imagen de la pregunta');
+                    });
+                    
+                    const overlay = document.createElement('div');
+                    overlay.className = 'image-button__overlay';
+                    overlay.innerHTML = '🔊';
+                    
+                    imageButton.appendChild(img);
+                    imageButton.appendChild(overlay);
+                    promptContainer.appendChild(imageButton);
+                }
+
+                // Add caption if available
+                if (prompt.caption) {
+                    const caption = document.createElement('p');
+                    caption.textContent = prompt.caption;
+                    caption.className = 'prompt-caption';
+                    promptContainer.appendChild(caption);
+                }
+
+                console.log('Question prompt rendered successfully');
+                
+            } catch (error) {
+                console.error('Error rendering question prompt:', error);
+            }
+        }
+
+        /**
+         * Renders the shuffled choices for the current question
+         * @param {Array} choices - Array of shuffled choice objects
+         * @param {number} questionIndex - Current question index
+         */
+        function renderChoices(choices, questionIndex) {
+            try {
+                const choicesSection = document.querySelector('.choices-section');
+                if (!choicesSection) {
+                    console.error('Choices section not found');
+                    return;
+                }
+
+                // Create or update choices grid
+                let choicesGrid = choicesSection.querySelector('.choices-grid');
+                if (!choicesGrid) {
+                    choicesGrid = document.createElement('div');
+                    choicesGrid.className = 'choices-grid';
+                    choicesSection.appendChild(choicesGrid);
+                }
+
+                // Clear existing choices
+                choicesGrid.innerHTML = '';
+
+                // Render each choice
+                choices.forEach((choice, index) => {
+                    const choiceButton = document.createElement('button');
+                    choiceButton.className = 'choice-button';
+                    choiceButton.setAttribute('data-choice-index', index);
+                    choiceButton.setAttribute('aria-label', `Opción ${index + 1}: ${choice.caption || 'Imagen'}`);
+                    
+                    // Check if this choice is already selected
+                    const isSelected = state.selections[questionIndex] === index;
+                    if (isSelected) {
+                        choiceButton.classList.add('selected');
+                    }
+
+                    // Create choice content container
+                    const choiceContent = document.createElement('div');
+                    choiceContent.className = 'choice-content';
+
+                    // Add choice image if available
+                    if (choice.imageBase64) {
+                        const img = document.createElement('img');
+                        img.src = choice.imageBase64;
+                        img.alt = choice.caption || `Opción ${index + 1}`;
+                        img.className = 'choice-image';
+                        
+                        // Add error handling for image loading
+                        img.onerror = function() {
+                            console.warn(`Failed to load choice image for option ${index + 1}`);
+                            img.style.display = 'none';
+                        };
+                        
+                        choiceContent.appendChild(img);
+                    }
+
+                    // Add choice caption
+                    if (choice.caption) {
+                        const caption = document.createElement('p');
+                        caption.textContent = choice.caption;
+                        caption.className = 'choice-caption';
+                        choiceContent.appendChild(caption);
+                    }
+
+                    // Add choice indicator (number or checkmark)
+                    const indicator = document.createElement('div');
+                    indicator.className = 'choice-indicator';
+                    
+                    const numberSpan = document.createElement('span');
+                    numberSpan.className = 'choice-number';
+                    numberSpan.textContent = index + 1;
+                    
+                    const checkmarkSpan = document.createElement('span');
+                    checkmarkSpan.className = 'choice-checkmark';
+                    checkmarkSpan.innerHTML = '✓';
+                    
+                    indicator.appendChild(numberSpan);
+                    indicator.appendChild(checkmarkSpan);
+                    
+                    choiceButton.appendChild(choiceContent);
+                    choiceButton.appendChild(indicator);
+                    
+                    // Add click handler
+                    choiceButton.addEventListener('click', function() {
+                        onChoose(index);
+                    });
+                    
+                    // Add keyboard handler
+                    choiceButton.addEventListener('keydown', function(event) {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            onChoose(index);
+                        }
+                    });
+                    
+                    choicesGrid.appendChild(choiceButton);
+                });
+
+                console.log('Choices rendered successfully:', choices.length, 'options');
+                
+            } catch (error) {
+                console.error('Error rendering choices:', error);
+            }
+        }
+
+        /**
+         * Updates the progress bar based on current question
+         * @param {number} questionIndex - Current question index
+         */
+        function updateProgressBar(questionIndex) {
+            try {
+                const progressFill = document.querySelector('.progress-bar__fill');
+                const progressText = document.querySelector('.progress-bar__text');
+                
+                if (progressFill && progressText && quizData) {
+                    const progress = ((questionIndex + 1) / quizData.length) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    progressText.textContent = `Pregunta ${questionIndex + 1} de ${quizData.length}`;
+                    
+                    console.log('Progress updated:', Math.round(progress) + '%');
+                }
+                
+            } catch (error) {
+                console.error('Error updating progress bar:', error);
+            }
+        }
+
+        /**
+         * Updates navigation button states based on current question
+         * @param {number} questionIndex - Current question index
+         */
+        function updateNavigationButtons(questionIndex) {
+            try {
+                const prevButton = document.getElementById('prev-button');
+                const nextButton = document.getElementById('next-button');
+                
+                if (prevButton) {
+                    prevButton.disabled = questionIndex === 0;
+                }
+                
+                if (nextButton && quizData) {
+                    const isLastQuestion = questionIndex === quizData.length - 1;
+                    nextButton.textContent = isLastQuestion ? 'Finalizar' : 'Siguiente';
+                    nextButton.disabled = false; // Allow navigation even without selection
+                }
+                
+                console.log('Navigation buttons updated for question', questionIndex + 1);
+                
+            } catch (error) {
+                console.error('Error updating navigation buttons:', error);
+            }
+        }
+
+        // ==========================================================================
+        // NAVIGATION HELPER FUNCTIONS
+        // ==========================================================================
+
+        /**
+         * Gets the current selection for a question
+         * @param {number} questionIndex - Index of the question
+         * @returns {number|null} Selected choice index or null if no selection
+         */
+        function getSelection(questionIndex) {
+            try {
+                if (questionIndex < 0 || questionIndex >= state.selections.length) {
+                    return null;
+                }
+                return state.selections[questionIndex];
+            } catch (error) {
+                console.error('Error getting selection:', error);
+                return null;
+            }
+        }
+
+        /**
+         * Announces text to screen readers
+         * @param {string} message - Message to announce
+         */
+        function announceToScreenReader(message) {
+            try {
+                // Create a live region for screen reader announcements
+                let liveRegion = document.getElementById('sr-live-region');
+                if (!liveRegion) {
+                    liveRegion = document.createElement('div');
+                    liveRegion.id = 'sr-live-region';
+                    liveRegion.className = 'sr-only';
+                    liveRegion.setAttribute('aria-live', 'polite');
+                    liveRegion.setAttribute('aria-atomic', 'true');
+                    document.body.appendChild(liveRegion);
+                }
+                
+                // Clear and set new message
+                liveRegion.textContent = '';
+                setTimeout(() => {
+                    liveRegion.textContent = message;
+                }, 100);
+                
+                console.log('Screen reader announcement:', message);
+                
+            } catch (error) {
+                console.error('Error announcing to screen reader:', error);
+            }
+        }
+
+        /**
+         * Finishes the quiz and shows results
+         */
+        function finishQuiz() {
+            try {
+                console.log('Finishing quiz...');
+                // TODO: Implement showResults() in task 7.1
+                announceToScreenReader('Quiz completado. Los resultados se mostrarán próximamente.');
+                console.log('Quiz completion - results display will be implemented in task 7.1');
+                
+            } catch (error) {
+                console.error('Error finishing quiz:', error);
+            }
+        }
+
+        /**
+         * Updates state with persistence and error handling
+         * @param {Function} updateFunction - Function that updates the state
+         * @param {string} operation - Description of the operation for logging
+         * @returns {boolean} True if update was successful
+         */
+        function updateStateWithPersistence(updateFunction, operation) {
+            try {
+                updateFunction();
+                console.log('State updated successfully for:', operation);
+                return true;
+                
+            } catch (error) {
+                console.error('Failed to update state for:', operation, error);
+                return false;
+            }
+        }
+
+        /**
+         * Restores the choice selection for a question
+         * @param {number} questionIndex - Index of the question
+         */
+        function restoreChoiceSelection(questionIndex) {
+            try {
+                const selectedIndex = state.selections[questionIndex];
+                if (selectedIndex !== null) {
+                    const choiceButton = document.querySelector(`.choice-button[data-choice-index="${selectedIndex}"]`);
+                    if (choiceButton) {
+                        choiceButton.classList.add('selected');
+                        choiceButton.setAttribute('aria-checked', 'true');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error restoring choice selection:', error);
+            }
+        }
+
+        // ==========================================================================
+        // KEYBOARD ACCESSIBILITY FEATURES
+        // ==========================================================================
+
+        /**
+         * Sets up global keyboard event listeners for accessibility
+         */
+        function setupKeyboardAccessibility() {
+            try {
+                // Global keyboard event listener
+                document.addEventListener('keydown', function(event) {
+                    handleGlobalKeydown(event);
+                });
+                
+                // Add ARIA attributes to main elements
+                setupARIAAttributes();
+                
+                console.log('Keyboard accessibility features initialized');
+                
+            } catch (error) {
+                console.error('Error setting up keyboard accessibility:', error);
+            }
+        }
+
+        /**
+         * Handles global keyboard events for quiz navigation and interaction
+         * @param {KeyboardEvent} event - The keyboard event
+         */
+        function handleGlobalKeydown(event) {
+            try {
+                // Prevent default behavior for handled keys
+                const handledKeys = ['1', '2', '3', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+                
+                if (handledKeys.includes(event.key)) {
+                    // Don't handle if user is typing in an input field
+                    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                        return;
+                    }
+                    
+                    event.preventDefault();
+                }
+
+                // Handle number keys for answer selection (1, 2, 3)
+                if (['1', '2', '3'].includes(event.key)) {
+                    const choiceIndex = parseInt(event.key) - 1;
+                    handleKeyboardChoiceSelection(choiceIndex);
+                    return;
+                }
+
+                // Handle Enter key for progression
+                if (event.key === 'Enter') {
+                    handleEnterKey();
+                    return;
+                }
+
+                // Handle arrow keys for navigation
+                if (['ArrowLeft', 'ArrowUp'].includes(event.key)) {
+                    handlePreviousNavigation();
+                    return;
+                }
+
+                if (['ArrowRight', 'ArrowDown'].includes(event.key)) {
+                    handleNextNavigation();
+                    return;
+                }
+
+                // Handle space key for current focused element
+                if (event.key === ' ') {
+                    handleSpaceKey(event);
+                    return;
+                }
+
+            } catch (error) {
+                console.error('Error handling keyboard event:', error);
+            }
+        }
+
+        /**
+         * Handles keyboard-based choice selection
+         * @param {number} choiceIndex - Index of the choice to select (0-2)
+         */
+        function handleKeyboardChoiceSelection(choiceIndex) {
+            try {
+                // Validate choice index
+                if (choiceIndex < 0 || choiceIndex > 2) {
+                    console.warn('Invalid choice index for keyboard selection:', choiceIndex);
+                    return;
+                }
+
+                // Check if we have quiz data and current question
+                if (!quizData || state.currentIndex < 0 || state.currentIndex >= quizData.length) {
+                    console.warn('No active question for keyboard choice selection');
+                    return;
+                }
+
+                const currentQuestion = quizData[state.currentIndex];
+                if (!currentQuestion.shuffledData || choiceIndex >= currentQuestion.shuffledData.choices.length) {
+                    console.warn('Choice index out of range for current question:', choiceIndex);
+                    return;
+                }
+
+                // Select the choice
+                onChoose(choiceIndex);
+                
+                // Focus the selected choice button for visual feedback
+                const choiceButton = document.querySelector(`.choice-button[data-choice-index="${choiceIndex}"]`);
+                if (choiceButton) {
+                    choiceButton.focus();
+                    
+                    // Add visual feedback animation
+                    choiceButton.classList.add('animate-selection');
+                    setTimeout(() => {
+                        choiceButton.classList.remove('animate-selection');
+                    }, 400);
+                }
+
+                // Provide haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+
+                console.log('Keyboard choice selection:', choiceIndex + 1);
+                
+            } catch (error) {
+                console.error('Error handling keyboard choice selection:', error);
+            }
+        }
+
+        /**
+         * Handles Enter key press for progression
+         */
+        function handleEnterKey() {
+            try {
+                // If we're on the last question and have an answer, finish the quiz
+                if (quizData && state.currentIndex === quizData.length - 1) {
+                    // Check if user has made a selection for current question
+                    if (state.selections[state.currentIndex] !== null) {
+                        console.log('Enter pressed - finishing quiz');
+                        // TODO: Implement showResults() in task 7.1
+                        // showResults();
+                        console.log('Quiz completion will be implemented in task 7.1');
+                        return;
+                    }
+                }
+
+                // Otherwise, go to next question
+                const success = nextQuestion();
+                if (success) {
+                    console.log('Enter pressed - moved to next question');
+                } else {
+                    console.log('Enter pressed - unable to move to next question');
+                }
+                
+            } catch (error) {
+                console.error('Error handling Enter key:', error);
+            }
+        }
+
+        /**
+         * Handles previous navigation (left arrow, up arrow)
+         */
+        function handlePreviousNavigation() {
+            try {
+                const success = prevQuestion();
+                if (success) {
+                    console.log('Keyboard navigation - moved to previous question');
+                    
+                    // Provide haptic feedback
+                    if (navigator.vibrate) {
+                        navigator.vibrate(30);
+                    }
+                } else {
+                    console.log('Keyboard navigation - already at first question');
+                }
+                
+            } catch (error) {
+                console.error('Error handling previous navigation:', error);
+            }
+        }
+
+        /**
+         * Handles next navigation (right arrow, down arrow)
+         */
+        function handleNextNavigation() {
+            try {
+                const success = nextQuestion();
+                if (success) {
+                    console.log('Keyboard navigation - moved to next question');
+                    
+                    // Provide haptic feedback
+                    if (navigator.vibrate) {
+                        navigator.vibrate(30);
+                    }
+                } else {
+                    console.log('Keyboard navigation - unable to move to next question');
+                }
+                
+            } catch (error) {
+                console.error('Error handling next navigation:', error);
+            }
+        }
+
+        /**
+         * Handles space key press for focused elements
+         * @param {KeyboardEvent} event - The keyboard event
+         */
+        function handleSpaceKey(event) {
+            try {
+                const focusedElement = document.activeElement;
+                
+                // If a choice button is focused, select it
+                if (focusedElement && focusedElement.classList.contains('choice-button')) {
+                    const choiceIndex = parseInt(focusedElement.getAttribute('data-choice-index'));
+                    if (!isNaN(choiceIndex)) {
+                        event.preventDefault();
+                        onChoose(choiceIndex);
+                        console.log('Space key - selected choice:', choiceIndex + 1);
+                    }
+                    return;
+                }
+
+                // If a navigation button is focused, click it
+                if (focusedElement && (focusedElement.id === 'prev-button' || focusedElement.id === 'next-button')) {
+                    event.preventDefault();
+                    focusedElement.click();
+                    console.log('Space key - activated navigation button');
+                    return;
+                }
+
+                // If an image button is focused, click it
+                if (focusedElement && focusedElement.classList.contains('image-button')) {
+                    event.preventDefault();
+                    focusedElement.click();
+                    console.log('Space key - activated image button');
+                    return;
+                }
+                
+            } catch (error) {
+                console.error('Error handling space key:', error);
+            }
+        }
+
+        /**
+         * Sets up ARIA attributes for accessibility
+         */
+        function setupARIAAttributes() {
+            try {
+                // Set up main application ARIA attributes
+                const appContainer = document.querySelector('.app-container');
+                if (appContainer) {
+                    appContainer.setAttribute('role', 'application');
+                    appContainer.setAttribute('aria-label', 'QUIZ3 - Aplicación de Quiz Interactivo');
+                }
+
+                // Set up progress bar ARIA attributes
+                const progressBar = document.querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.setAttribute('role', 'progressbar');
+                    progressBar.setAttribute('aria-label', 'Progreso del quiz');
+                    progressBar.setAttribute('aria-valuemin', '0');
+                    progressBar.setAttribute('aria-valuemax', '100');
+                    progressBar.setAttribute('aria-valuenow', '0');
+                }
+
+                // Set up quiz container ARIA attributes
+                const quizContainer = document.querySelector('.quiz-container');
+                if (quizContainer) {
+                    quizContainer.setAttribute('role', 'main');
+                    quizContainer.setAttribute('aria-label', 'Contenido del quiz');
+                }
+
+                // Set up question section ARIA attributes
+                const questionSection = document.querySelector('.question-section');
+                if (questionSection) {
+                    questionSection.setAttribute('role', 'region');
+                    questionSection.setAttribute('aria-label', 'Pregunta actual');
+                }
+
+                // Set up choices section ARIA attributes
+                const choicesSection = document.querySelector('.choices-section');
+                if (choicesSection) {
+                    choicesSection.setAttribute('role', 'radiogroup');
+                    choicesSection.setAttribute('aria-label', 'Opciones de respuesta');
+                }
+
+                // Set up navigation section ARIA attributes
+                const navigationSection = document.querySelector('.navigation-section');
+                if (navigationSection) {
+                    navigationSection.setAttribute('role', 'navigation');
+                    navigationSection.setAttribute('aria-label', 'Navegación del quiz');
+                }
+
+                console.log('ARIA attributes set up successfully');
+                
+            } catch (error) {
+                console.error('Error setting up ARIA attributes:', error);
+            }
+        }
+
+        /**
+         * Updates ARIA attributes for dynamic content
+         * @param {number} questionIndex - Current question index
+         */
+        function updateARIAAttributes(questionIndex) {
+            try {
+                // Update progress bar ARIA attributes
+                const progressBar = document.querySelector('.progress-bar');
+                if (progressBar && quizData) {
+                    const progress = ((questionIndex + 1) / quizData.length) * 100;
+                    progressBar.setAttribute('aria-valuenow', Math.round(progress).toString());
+                    progressBar.setAttribute('aria-valuetext', `Pregunta ${questionIndex + 1} de ${quizData.length}`);
+                }
+
+                // Update choice buttons ARIA attributes
+                const choiceButtons = document.querySelectorAll('.choice-button');
+                choiceButtons.forEach((button, index) => {
+                    button.setAttribute('role', 'radio');
+                    button.setAttribute('tabindex', '0');
+                    
+                    // Set checked state based on selection
+                    const isSelected = state.selections[questionIndex] === index;
+                    button.setAttribute('aria-checked', isSelected.toString());
+                    
+                    if (isSelected) {
+                        button.setAttribute('aria-describedby', 'selected-choice-description');
+                    } else {
+                        button.removeAttribute('aria-describedby');
+                    }
+                });
+
+                console.log('ARIA attributes updated for question', questionIndex + 1);
+                
+            } catch (error) {
+                console.error('Error updating ARIA attributes:', error);
+            }
+        }
+
+        /**
+         * Manages focus for better keyboard navigation
+         * @param {number} questionIndex - Current question index
+         */
+        function manageFocus(questionIndex) {
+            try {
+                // Focus the first choice button when a new question is rendered
+                const firstChoiceButton = document.querySelector('.choice-button[data-choice-index="0"]');
+                if (firstChoiceButton) {
+                    // Small delay to ensure rendering is complete
+                    setTimeout(() => {
+                        firstChoiceButton.focus();
+                    }, 100);
+                }
+
+                console.log('Focus managed for question', questionIndex + 1);
+                
+            } catch (error) {
+                console.error('Error managing focus:', error);
+            }
+        }
+
+        // Initialize application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('QUIZ3 Application initialized');
+            console.log('💡 To test the fallback system, run: testFallbackSystem()');
+            console.log('💡 To test answer selection, run: testAnswerSelection()');
+            console.log('💡 To test question rendering, run: testQuestionRendering()');
+            console.log('💡 To test navigation, run: testNavigation()');
+            console.log('💡 Keyboard shortcuts: 1/2/3 (select answers), Enter (next), Arrows (navigate)');
+            
+            // Set up initial event listeners for choice buttons
+            setupChoiceEventListeners();
+            
+            // Set up navigation event listeners
+            setupNavigationEventListeners();
+            
+            // Set up keyboard accessibility
+            setupKeyboardAccessibility();
+            
+            // Initialization logic will be added in subsequent tasks
+        });
+
+        // ==========================================================================
+        // TESTING FUNCTIONS
+        // ==========================================================================
+
+        /**
+         * Test function for question rendering functionality
+         */
+        function testQuestionRendering() {
+            console.log('🧪 Testing question rendering functionality...');
+            
+            // Test shuffle function
+            const testArray = [1, 2, 3, 4, 5];
+            const shuffled = shuffleArray(testArray);
+            console.log('Original array:', testArray);
+            console.log('Shuffled array:', shuffled);
+            console.log('Arrays are different:', JSON.stringify(testArray) !== JSON.stringify(shuffled));
+            
+            // Test with sample quiz data
+            if (typeof loadLocalData === 'function') {
+                loadLocalData().then(() => {
+                    if (quizData && quizData.length > 0) {
+                        console.log('Testing with loaded quiz data...');
+                        renderQuestion(0);
+                        console.log('✅ Question rendering test completed');
+                    } else {
+                        console.log('❌ No quiz data available for testing');
+                    }
+                }).catch(error => {
+                    console.error('❌ Failed to load test data:', error);
+                });
+            } else {
+                console.log('❌ loadLocalData function not available');
+            }
+        }
+
+        /**
+         * Test function for navigation functionality
+         */
+        function testNavigation() {
+            console.log('🧪 Testing navigation functionality...');
+            
+            // Test navigation functions
+            console.log('Testing nextQuestion function...');
+            const nextResult = nextQuestion();
+            console.log('Next question result:', nextResult);
+            
+            console.log('Testing prevQuestion function...');
+            const prevResult = prevQuestion();
+            console.log('Previous question result:', prevResult);
+            
+            // Test navigation buttons
+            const prevButton = document.getElementById('prev-button');
+            const nextButton = document.getElementById('next-button');
+            
+            console.log('Previous button found:', !!prevButton);
+            console.log('Next button found:', !!nextButton);
+            
+            if (prevButton && nextButton) {
+                console.log('Previous button disabled:', prevButton.disabled);
+                console.log('Next button disabled:', nextButton.disabled);
+                console.log('✅ Navigation test completed');
+            } else {
+                console.log('❌ Navigation buttons not found');
+            }
+        }
+    </script>
+</body>
+</html>
